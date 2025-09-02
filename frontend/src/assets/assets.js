@@ -60,6 +60,8 @@ import star_dull_icon from './star_dull_icon.png'
 import star_icon from './star_icon.png'
 import support_icon from './support_icon.png'
 import PhonePe_logo_icon from './PhonePe_logo_icon.svg'
+import droup_down_arrow from './droup_down_arrow.png'
+import Hero_img from './Hero_img.jpg'
 
 
 export const assets = {
@@ -80,6 +82,8 @@ export const assets = {
     star_icon,
     support_icon,
     PhonePe_logo_icon,
+    droup_down_arrow,
+    Hero_img
 }
 
 // Auto-generated products array (40 items) reformatted

@@ -13,7 +13,7 @@ import Product from './page/Product'
 
 function App() {
   return (
-    <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]' >
+    <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] bg-[#f2e8cf]' >
       <Navbar/>
       <Routes>
         <Route path='/' element={<Home/>}/>

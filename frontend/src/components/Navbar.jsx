@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {assets} from '../assets/assets.js'
 import { Link, NavLink } from 'react-router-dom'
 
 function Navbar() {
+  const [visible, setVisible] = useState(false)
   return (
     <div className='flex items-center justify-between py-5 font-medium'>
         <img src={assets.Logo} className='w-36' alt="" />
@@ -42,6 +43,20 @@ function Navbar() {
           <img src={assets.cart_icon} alt="" className='w-8 cursor-pointer' />
           <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]'>10</p>
           </Link>
+          <img onClick={() => setVisible(true)}src={assets.menu_bar_icon} alt="" className='w-7 cursor-pointer sm:hidden' />
+        </div>
+        {/* sitebar menu will be only small scrieen */}
+        <div className={`absolute top-0 bottom-0 right-0 overflow-hidden transition-all bg-white ${visible ? 'w-full' : 'w-0'} `}>
+          <div className='flex flex-col text-gray-600'>
+            <div onClick={()=> setVisible(false)}className='flex items-center gap-3 p-2 '>
+              <img className='h-4 rotate-90' src={assets.droup_down_arrow} alt="" />
+              <p>Back</p>
+            </div>
+            <NavLink onClick={()=>setVisible(false)} className='py-2 px-4 hover:bg-gray-100' to='/'>HOME</NavLink>
+            <NavLink onClick={()=>setVisible(false)} className='py-2 px-4 hover:bg-gray-100' to='/about'>ABOUT</NavLink>
+            <NavLink onClick={()=>setVisible(false)} className='py-2 px-4 hover:bg-gray-100' to='/collection'>COLLECTION</NavLink>
+            <NavLink onClick={()=>setVisible(false)} className='py-2 px-4 hover:bg-gray-100' to='/contact'>CONTACT</NavLink>
+          </div>
         </div>
     </div>
   )
