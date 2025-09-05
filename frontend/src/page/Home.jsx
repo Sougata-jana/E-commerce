@@ -3,6 +3,7 @@ import Hero from '../components/Hero'
 import NewCollection from '../components/NewCollection'
 import BestSaller from '../components/BestSaller'
 import OurPolicy from '../components/OurPolicy'
+import NewLaterBox from '../components/NewLaterBox'
 
 function Home() {
   return (
@@ -11,6 +12,7 @@ function Home() {
       <NewCollection/>
       <BestSaller/>
       <OurPolicy/>
+      <NewLaterBox/>
     </div>
   )
 }
