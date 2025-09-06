@@ -40,7 +40,7 @@ function Footer() {
         <div>
           <h3 className="text-sm font-bold tracking-wider text-black mb-5">GET IN TOUCH</h3>
             <ul className="space-y-3 text-sm">
-              <li className="select-all">+91-780-1080-8132</li>
+              <li className="select-all">+91-781-080-8132</li>
               <li className="break-all">janasougata198@gmail.com</li>
               <li><a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-black">Instagram</a></li>
             </ul>

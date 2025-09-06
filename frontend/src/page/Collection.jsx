@@ -75,7 +75,7 @@ function Collection() {
         <Title text1="SHOP" text2=" COLLECTION" />
 
         {/* Search + Sort */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
           <div className="relative w-full md:w-72">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <img src={assets.search_icon} alt="Search" className="w-4 h-4" />
@@ -89,8 +89,23 @@ function Collection() {
             />
           </div>
 
-          {/* Segmented sort */}
-          <div className="inline-flex rounded border border-gray-300 overflow-hidden bg-white">
+          {/* Sort (mobile select) */}
+          <div className="block sm:hidden w-full">
+            <label htmlFor="sortSelect" className="sr-only">Sort</label>
+            <select
+              id="sortSelect"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
+            >
+              {Object.entries(SORT_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Segmented sort (hidden on mobile) */}
+          <div className="hidden sm:inline-flex rounded border border-gray-300 overflow-hidden bg-white w-full md:w-auto">
             {Object.entries(SORT_LABELS).map(([key, label], idx) => (
               <button
                 key={key}
@@ -106,7 +121,7 @@ function Collection() {
       </div>
 
       {/* Filters: all options visible as chips */}
-      <div className="space-y-4 mb-6">
+  <div className="space-y-5 mb-6">
         {/* Category */}
         <div>
           <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Category</div>
@@ -159,14 +174,14 @@ function Collection() {
         </div>
 
         {/* Utilities */}
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm text-gray-500 order-2 sm:order-1">
             {filtered.length} result{filtered.length === 1 ? '' : 's'}
           </span>
           <button
             type="button"
             onClick={() => { setCategory('All'); setSubCategory('All'); setSize('All'); setQuery(''); setSort('latest'); }}
-            className="ml-auto text-sm px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
+            className="ml-auto text-sm px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 order-1 sm:order-2"
           >
             Reset
           </button>
@@ -174,7 +189,7 @@ function Collection() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 gap-y-5 sm:gap-y-6">
         {filtered.map((item) => (
           <ProductIteams
             key={item._id}
