@@ -4,8 +4,6 @@ import ProductIteams from '../components/ProductIteams';
 import { shopContext } from '../context/ShopContext';
 import { assets } from '../assets/assets';
 
-const CATEGORIES = ['Men', 'Women', 'Kids'];
-const SUBCATEGORIES = ['Topwear', 'Bottomwear', 'Footwear', 'Accessories'];
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
 function Collection() {
@@ -16,25 +14,54 @@ function Collection() {
   const [size, setSize] = useState('All');
   const [sort, setSort] = useState('latest'); // latest | priceLow | priceHigh | name
 
+  // derive dynamic options from data so chips always match product metadata
+  const categories = useMemo(() => {
+    const set = new Set((products || []).map(p => (p.category || '').trim()).filter(Boolean));
+    return Array.from(set).sort();
+  }, [products]);
+
+  const subcategories = useMemo(() => {
+    const norm = (v) => (v || '').toString().trim().toLowerCase();
+    const set = new Set();
+    (products || []).forEach(p => {
+      if (category !== 'All' && norm(p.category) !== norm(category)) return;
+      const sub = (p.subCategory || '').trim();
+      if (sub) set.add(sub);
+    });
+    return Array.from(set).sort();
+  }, [products, category]);
+
   const filtered = useMemo(() => {
+    const norm = (v) => (v || '').toString().trim().toLowerCase();
     let list = products || [];
     // Search by name
     if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(p => p.name?.toLowerCase().includes(q));
+      const q = norm(query);
+      list = list.filter(p => norm(p.name).includes(q));
     }
     // Category
     if (category !== 'All') {
-      list = list.filter(p => p.category === category);
+      const c = norm(category);
+      list = list.filter(p => norm(p.category) === c);
     }
     // SubCategory
     if (subCategory !== 'All') {
-      list = list.filter(p => p.subCategory === subCategory);
+      const s = norm(subCategory);
+      list = list.filter(p => norm(p.subCategory) === s);
     }
     // Size presence
     if (size !== 'All') {
       list = list.filter(p => Array.isArray(p.sizes) && p.sizes.includes(size));
     }
+    // Deduplicate by _id (safety against data duplication)
+    const seen = new Set();
+    list = list.filter(p => {
+      const key = p?._id || `${norm(p.name)}|${p.price}|${(p.image && p.image[0]) || ''}`;
+      if (!key) return false;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     // Sorting
     switch (sort) {
       case 'priceLow':
@@ -126,11 +153,11 @@ function Collection() {
         <div>
           <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Category</div>
           <div className="flex flex-wrap gap-2">
-            {['All', ...CATEGORIES].map((v) => (
+      {['All', ...categories].map((v) => (
               <button
                 key={v}
                 type="button"
-                onClick={() => setCategory(v)}
+        onClick={() => { setCategory(v); setSubCategory('All'); }}
                 className={chip(category === v)}
               >
                 {v}
@@ -143,7 +170,7 @@ function Collection() {
         <div>
           <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Subcategory</div>
           <div className="flex flex-wrap gap-2">
-            {['All', ...SUBCATEGORIES].map((v) => (
+            {['All', ...subcategories].map((v) => (
               <button
                 key={v}
                 type="button"

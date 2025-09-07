@@ -13,7 +13,7 @@ function Footer() {
               <img 
                 src={assets.Logo} 
                 alt="Brand Logo" 
-                className=" h-40 w-auto object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.03]" 
+                className=" h-20 w-auto object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.03]" 
                 loading="lazy"
                 decoding="async"
               />
