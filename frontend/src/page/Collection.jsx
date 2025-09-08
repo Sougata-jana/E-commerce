@@ -14,6 +14,8 @@ function Collection() {
   const [size, setSize] = useState('All');
   const [sort, setSort] = useState('latest'); // latest | priceLow | priceHigh | name
 
+  const {search, setSearch } = useContext(shopContext)
+
   // derive dynamic options from data so chips always match product metadata
   const categories = useMemo(() => {
     const set = new Set((products || []).map(p => (p.category || '').trim()).filter(Boolean));
@@ -34,6 +36,8 @@ function Collection() {
   const filtered = useMemo(() => {
     const norm = (v) => (v || '').toString().trim().toLowerCase();
     let list = products || [];
+
+    
     // Search by name
     if (query.trim()) {
       const q = norm(query);
