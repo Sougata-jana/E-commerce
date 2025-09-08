@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Title from '../components/Title';
 import ProductIteams from '../components/ProductIteams';
 import { shopContext } from '../context/ShopContext';
@@ -7,6 +7,8 @@ import { assets } from '../assets/assets';
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
 function Collection() {
+
+  const { search, showsearch } = useContext(shopContext);
   const { products } = useContext(shopContext);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
@@ -14,7 +16,6 @@ function Collection() {
   const [size, setSize] = useState('All');
   const [sort, setSort] = useState('latest'); // latest | priceLow | priceHigh | name
 
-  const {search, setSearch } = useContext(shopContext)
 
   // derive dynamic options from data so chips always match product metadata
   const categories = useMemo(() => {
@@ -37,7 +38,9 @@ function Collection() {
     const norm = (v) => (v || '').toString().trim().toLowerCase();
     let list = products || [];
 
-    
+  if (search && showsearch) {
+      list = list.filter(p => norm(p.name).includes(norm(search)));
+    }
     // Search by name
     if (query.trim()) {
       const q = norm(query);
@@ -83,7 +86,15 @@ function Collection() {
         break;
     }
     return list;
-  }, [products, query, category, subCategory, size, sort]);
+  }, [products, query, category, subCategory, size, sort, search, showsearch]);
+
+  // Autofocus the in-page search when the global search is visible
+  const inputRef = useRef(null)
+  useEffect(() => {
+    if (showsearch && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [showsearch])
 
   // UI helpers
   const chipBase =
@@ -112,6 +123,7 @@ function Collection() {
               <img src={assets.search_icon} alt="Search" className="w-4 h-4" />
             </span>
             <input
+              ref={inputRef}
               type="text"
               placeholder="Search products..."
               value={query}

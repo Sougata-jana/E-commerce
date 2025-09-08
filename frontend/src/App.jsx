@@ -16,7 +16,7 @@ import SearchBox from './components/SearchBox'
 function App() {
   const location = useLocation()
   const pathname = location.pathname
-  const showSearchOnRoute = pathname === '/' || pathname === '/collection'
+  const showSearchOnRoute = pathname === '/collection'
   return (
     <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] bg-[#f2e8cf]' >
       <Navbar/>
