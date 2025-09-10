@@ -1,4 +1,6 @@
 import React from 'react'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { Routes,Route, useLocation } from 'react-router-dom'
 import Home from "./page/Home"
 import About from './page/About'
@@ -32,7 +34,8 @@ function App() {
         <Route path='/contact' element={<Contact/>}/>
         <Route path='/placeorder' element={<PlaceOrder/>}/>
       </Routes>
-      <Footer/>
+  <Footer/>
+  <ToastContainer position="top-center" autoClose={2000} hideProgressBar newestOnTop closeOnClick pauseOnHover theme="colored" />
 
     </div>
   )

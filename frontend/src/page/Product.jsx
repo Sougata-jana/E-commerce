@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 import { Link, useParams } from 'react-router-dom'
 import { shopContext } from '../context/ShopContext'
 import { assets } from '../assets/assets'
@@ -35,9 +36,25 @@ function Product() {
   const related = (products || []).filter(p => p._id !== product._id && p.category === product.category).slice(0, 8)
 
   const handleAddToCart = () => {
-    // Placeholder: hook up to cart context/integration if available
-    // For now, simple visual feedback
-    alert('Added to cart')
+    if (sizes.length > 0 && !selectedSize) {
+      toast.error('Please select a size')
+      return
+    }
+    // TODO: integrate with cart
+    toast.success('Added to cart')
+  }
+
+  // Gallery helpers
+  const images = Array.isArray(product.image) ? product.image : []
+  const activeIndexRaw = images.indexOf(activeImg)
+  const activeIndex = activeIndexRaw >= 0 ? activeIndexRaw : 0
+  const customCaptions = Array.isArray(product.image_captions)
+    ? product.image_captions
+    : (Array.isArray(product.imageCaptions) ? product.imageCaptions : null)
+  const getCaption = (idx) => {
+    const total = images.length
+    if (customCaptions && customCaptions[idx]) return customCaptions[idx]
+    return `Image ${idx + 1} of ${total} — ${product.name}`
   }
 
   return (
@@ -56,24 +73,35 @@ function Product() {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         {/* Gallery */}
         <div>
-          <div className='aspect-square bg-white rounded-lg border overflow-hidden flex items-center justify-center'>
+          <div className='aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center shadow-sm'>
             {activeImg ? (
               <img src={activeImg} alt={product.name} className='max-h-full max-w-full object-contain' />
             ) : (
               <div className='w-full h-full animate-pulse bg-gray-100' />
             )}
           </div>
+          {/* Active image caption */}
+          {images.length > 0 && (
+            <p className='mt-2 text-xs text-gray-600'>
+              {getCaption(activeIndex)}
+            </p>
+          )}
           {product.image && product.image.length > 1 && (
             <div className='mt-3 grid grid-cols-5 gap-2'>
               {product.image.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImg(img)}
-                  className={`aspect-square rounded-md border overflow-hidden bg-white ${activeImg === img ? 'ring-2 ring-black' : ''}`}
-                  aria-label={`Preview ${idx+1}`}
-                >
-                  <img src={img} alt={`${product.name} ${idx+1}`} className='w-full h-full object-contain' />
-                </button>
+                <div key={idx} className='flex flex-col items-center'>
+                  <button
+                    onClick={() => setActiveImg(img)}
+                    className={`aspect-square w-full rounded-md overflow-hidden bg-white ${activeImg === img ? 'ring-2 ring-black' : ''}`}
+                    aria-label={`Preview ${idx + 1}: ${getCaption(idx)}`}
+                    title={getCaption(idx)}
+                  >
+                    <img src={img} alt={`${product.name} ${idx+1}`} className='w-full h-full object-contain' />
+                  </button>
+                  <p className='mt-1 text-[10px] leading-4 text-gray-600 text-center line-clamp-1 w-full' title={getCaption(idx)}>
+                    {getCaption(idx)}
+                  </p>
+                </div>
               ))}
             </div>
           )}
@@ -138,30 +166,12 @@ function Product() {
             </button>
           </div>
 
-          {/* Info bar */}
-          <div className='mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm'>
-            <div className='flex items-center gap-3 p-3 rounded border bg-white'>
-              <img src={assets.exchange_icon} alt='' className='w-8 h-8'/>
-              <div>
-                <p className='font-medium text-gray-800'>Easy Exchange</p>
-                <p className='text-gray-500'>7-day return policy</p>
-              </div>
+          {/* Trust banner image (optional). Add `trust_banner` to assets to display. */}
+          {assets.trust_banner && (
+            <div className='mt-8'>
+              <img src={assets.trust_banner} alt='Trust badges' className='w-full rounded-xl shadow-sm' />
             </div>
-            <div className='flex items-center gap-3 p-3 rounded border bg-white'>
-              <img src={assets.guarantee_quality_icon} alt='' className='w-8 h-8'/>
-              <div>
-                <p className='font-medium text-gray-800'>Quality Guarantee</p>
-                <p className='text-gray-500'>Curated products</p>
-              </div>
-            </div>
-            <div className='flex items-center gap-3 p-3 rounded border bg-white'>
-              <img src={assets.support_icon} alt='' className='w-8 h-8'/>
-              <div>
-                <p className='font-medium text-gray-800'>Support</p>
-                <p className='text-gray-500'>We’re here to help</p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -175,7 +185,7 @@ function Product() {
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4'>
             {related.map(item => (
               <Link key={item._id} to={`/product/${item._id}`} className='block group'>
-                <div className='overflow-hidden rounded border bg-white'>
+                <div className='overflow-hidden rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow'>
                   <img src={item.image?.[0]} alt={item.name} className='w-full h-48 object-contain bg-white group-hover:scale-105 transition-transform' />
                 </div>
                 <p className='mt-2 text-sm text-gray-800 line-clamp-1'>{item.name}</p>
