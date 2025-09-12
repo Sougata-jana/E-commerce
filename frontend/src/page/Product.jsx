@@ -6,7 +6,7 @@ import { assets } from '../assets/assets'
 
 function Product() {
   const { productID } = useParams()
-  const { products, currency } = useContext(shopContext)
+  const { products, currency, addCart } = useContext(shopContext)
 
   const product = useMemo(() => {
     return (products || []).find(p => p._id === productID) || null
@@ -40,7 +40,7 @@ function Product() {
       toast.error('Please select a size')
       return
     }
-    // TODO: integrate with cart
+    addCart(product._id, selectedSize || 'default', qty)
     toast.success('Added to cart')
   }
 
