@@ -5,7 +5,7 @@ import { shopContext } from '../context/ShopContext.jsx'
 
 function Navbar() {
   const [visible, setVisible] = useState(false)
-  const {setShowSearch} = useContext(shopContext)
+  const {setShowSearch,getCartCount} = useContext(shopContext)
   const navigate = useNavigate()
   
   // Prevent body scroll when menu is open
@@ -60,7 +60,7 @@ function Navbar() {
           </div>
           <Link to='/cart' className='relative'>
           <img src={assets.cart_icon} alt="" className='w-8 cursor-pointer' />
-          <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]'>10</p>
+          <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]'>{getCartCount()}</p>
           </Link>
           <img onClick={() => { setVisible(true); setShowSearch(false); }} src={assets.menu_bar_icon} alt="Open menu" className='w-7 cursor-pointer sm:hidden' />
         </div>
