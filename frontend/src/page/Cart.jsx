@@ -56,20 +56,25 @@ function Cart() {
                     <div className='text-xs text-gray-500 mt-0.5'>Size: {size}</div>
                     <div className='mt-2 flex items-center gap-3'>
                       <div className='inline-flex items-center rounded-full border border-gray-300 overflow-hidden'>
-                        <button onClick={() => {
-                          if (quantity <= 1) {
-                            decCart(product._id, size, 1)
-                            toast.info('Removed from cart')
-                          } else {
-                            decCart(product._id, size, 1)
-                          }
-                        }} className='px-3 py-1.5 text-lg'>-</button>
+                        <button
+                          onClick={() => {
+                            if (quantity > 1) {
+                              decCart(product._id, size, 1)
+                            }
+                          }}
+                          className={`px-3 py-1.5 text-lg ${quantity <= 1 ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          disabled={quantity <= 1}
+                        >-</button>
                         <span className='px-3 select-none text-sm'>{quantity}</span>
                         <button onClick={() => addCart(product._id, size, 1)} className='px-3 py-1.5 text-lg'>+</button>
                       </div>
                       <button onClick={() => { removeCart(product._id, size); toast.info('Item removed') }} className='text-sm text-red-600 hover:underline'>Remove</button>
                     </div>
-                  </div>
+                  {/* Product description */}
+                  {product.desc && (
+                    <div className='mt-1 text-xs text-gray-500 line-clamp-2'>{product.desc}</div>
+                  )}
+                </div>
                   <div className='text-right'>
                     <div className='text-sm text-gray-500'>{currency}{product.price} each</div>
                     <div className='font-semibold'>{currency}{product.price * quantity}</div>

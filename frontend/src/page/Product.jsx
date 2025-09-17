@@ -57,6 +57,36 @@ function Product() {
     return `Image ${idx + 1} of ${total} — ${product.name}`
   }
 
+  // Offer helpers
+  const deriveStablePercent = (id) => {
+    const s = String(id || '')
+    let sum = 0
+    for (let i = 0; i < s.length; i++) sum = (sum + s.charCodeAt(i)) % 997
+    // Map sum to 10..50%
+    return 10 + (sum % 41)
+  }
+
+  const extractPercent = (raw) => {
+    if (typeof raw === 'number') return raw
+    if (raw == null) return null
+    const m = String(raw).match(/(\d+(?:\.\d+)?)/)
+    return m ? parseFloat(m[1]) : null
+  }
+
+  const offerPercent = useMemo(() => {
+    const p = extractPercent(product.offer)
+    const percent = p == null || isNaN(p) ? deriveStablePercent(product._id) : p
+    return Math.max(0, Math.min(90, percent))
+  }, [product.offer, product._id])
+
+  const offerText = useMemo(() => `${offerPercent}% OFF`, [offerPercent])
+
+  const discountedPrice = useMemo(() => {
+    const price = Number(product.price) || 0
+    const newPrice = Math.round(price * (1 - offerPercent / 100))
+    return newPrice
+  }, [offerPercent, product.price])
+
   return (
     <div className='max-w-7xl mx-auto px-6 lg:px-12 my-10'>
       {/* Breadcrumbs */}
@@ -125,8 +155,11 @@ function Product() {
             <span className='ml-2'>(120 reviews)</span>
           </div>
 
-          <div className='mt-4 text-2xl font-semibold text-gray-900'>
-            {currency}{product.price}
+          {/* Price + Offer */}
+          <div className='mt-4 flex items-center gap-3'>
+            <div className='text-2xl font-semibold text-gray-900'>{currency}{discountedPrice}</div>
+            <div className='text-sm text-gray-500 line-through'>{currency}{product.price}</div>
+            <span className='inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200'>{offerText}</span>
           </div>
 
           {product.description && (
@@ -183,15 +216,23 @@ function Product() {
             <Link to='/collection' className='text-sm text-gray-600 hover:underline'>View all</Link>
           </div>
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4'>
-            {related.map(item => (
-              <Link key={item._id} to={`/product/${item._id}`} className='block group'>
-                <div className='overflow-hidden rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow'>
-                  <img src={item.image?.[0]} alt={item.name} className='w-full h-48 object-contain bg-white group-hover:scale-105 transition-transform' />
-                </div>
-                <p className='mt-2 text-sm text-gray-800 line-clamp-1'>{item.name}</p>
-                <p className='text-sm font-semibold'>{currency}{item.price}</p>
-              </Link>
-            ))}
+            {related.map(item => {
+              const p = extractPercent(item.offer)
+              const percent = p == null || isNaN(p) ? deriveStablePercent(item._id) : p
+              const label = `${Math.max(0, Math.min(90, percent))}% OFF`
+              return (
+                <Link key={item._id} to={`/product/${item._id}`} className='block group'>
+                  <div className='relative overflow-hidden rounded-lg bg-white shadow-sm group-hover:shadow-md transition-shadow'>
+                    <span className='absolute left-2 top-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200'>
+                      {label}
+                    </span>
+                    <img src={item.image?.[0]} alt={item.name} className='w-full h-48 object-contain bg-white group-hover:scale-105 transition-transform' />
+                  </div>
+                  <p className='mt-2 text-sm text-gray-800 line-clamp-1'>{item.name}</p>
+                  <p className='text-sm font-semibold'>{currency}{item.price}</p>
+                </Link>
+              )
+            })}
           </div>
         </div>
       )}
