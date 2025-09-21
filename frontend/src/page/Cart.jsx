@@ -14,6 +14,8 @@ function Cart() {
     removeCart,
     delivery_fee,
     getCartSubtotal,
+    getOfferPercentForProduct,
+    getDiscountedUnitPrice,
   } = useContext(shopContext)
 
   const cartData = useMemo(() => {
@@ -55,6 +57,11 @@ function Cart() {
                   <div className='flex-1 min-w-0'>
                     <Link to={`/product/${product._id}`} className='font-medium text-gray-900 line-clamp-1'>{product.name}</Link>
                     <div className='text-xs text-gray-500 mt-0.5'>Size: {size}</div>
+                    <div className='mt-1'>
+                      <span className='inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200'>
+                        {getOfferPercentForProduct(product)}% OFF
+                      </span>
+                    </div>
                     <div className='mt-2 flex items-center gap-3'>
                       <div className='inline-flex items-center rounded-full border border-gray-300 overflow-hidden'>
                         <button
@@ -77,8 +84,8 @@ function Cart() {
                   )}
                 </div>
                   <div className='text-right'>
-                    <div className='text-sm text-gray-500'>{currency}{product.price} each</div>
-                    <div className='font-semibold'>{currency}{product.price * quantity}</div>
+                    <div className='text-sm text-gray-500 line-through'>{currency}{product.price} each</div>
+                    <div className='font-semibold'>{currency}{getDiscountedUnitPrice(product)} x {quantity} = {currency}{getDiscountedUnitPrice(product) * quantity}</div>
                   </div>
                 </div>
               ))}

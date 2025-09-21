@@ -17,7 +17,7 @@ function Navbar() {
     }
   }, [visible])
   return (
-    <div  className='flex items-center justify-between py-5 font-medium '>
+     <div  className='relative z-[999] flex items-center justify-between py-5 font-medium '>
       <Link to={'/'}>
         <img src={assets.Logo} className='w-18' alt="" />
       </Link>
@@ -49,8 +49,8 @@ function Navbar() {
           />
 
           <div className='group relative'>
-            <img src={assets.profile_icon} alt="" className='w-7 cursor-pointer' />
-            <div  className='group-hover:block hidden absolute right-0 top-full bg-white shadow-md rounded-md p-2'>
+            <Link to='/login'><img  src={assets.profile_icon} alt="" className='w-7 cursor-pointer' /></Link>
+              <div  className={`group-hover:block hidden absolute right-0 top-full mt-2 bg-white shadow-md rounded-md p-2 z-[999]`}>
               <div className='flex flex-col w-36 gap-5 py-3 px-5 bg-slate-100 text-gray-500 rounded'>
               <p className='cursor-pointer hover:text-black'>MY Profile</p>
               <p className='cursor-pointer hover:text-black'>Orders</p>
