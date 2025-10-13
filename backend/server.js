@@ -4,6 +4,7 @@ import 'dotenv/config'
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/user.routes.js";
+import productRouter from "./routes/prouduct.routes.js";
 
 //app config
 const app = express()
@@ -23,7 +24,7 @@ app.get('/', (req, res)=>{
 
 //api endpoints
 app.use('/api/user', userRouter)
-
+app.use('/api/product', productRouter )
 
 app.listen(port, ()=> console.log("server Started at port :" + port)
 )
