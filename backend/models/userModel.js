@@ -12,10 +12,6 @@ const userSchema = mongoose.Schema(
         },
         password:{
             type:String,
-            required:ture
-        },
-        confirmPassword:{
-            type:String,
             required:true
         },
         cartData:{
