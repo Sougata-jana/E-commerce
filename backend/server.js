@@ -7,6 +7,9 @@ import userRouter from "./routes/user.routes.js";
 import productRouter from "./routes/prouduct.routes.js";
 
 //app config
+
+
+
 const app = express()
 const port = process.env.PORT || 4000
 connectDB()
