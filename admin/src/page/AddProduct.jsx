@@ -23,7 +23,7 @@ const AddProduct = ({ token: tokenProp }) => {
   const [category, setCategory] = React.useState("Men");
   const [subCategory, setSubcategory] = React.useState("Topwear");
   const [price, setPrice] = React.useState("");
-  const [bestseller, setBestseller] = React.useState(false);
+  const [bestSeller, setBestSeller] = React.useState(false);
   const [sizes, setSizes] = React.useState([]);
 
   // Reusable input styles
@@ -47,7 +47,7 @@ const AddProduct = ({ token: tokenProp }) => {
       formData.append("subCategory", subCategory);
       formData.append("price", price);
       formData.append("size", JSON.stringify(sizes)); // backend expects key "size"
-      formData.append("bestSeller", String(bestseller)); // send as string; backend treats only true as true
+      formData.append("bestSeller", String(bestSeller)); // send as string; backend treats only true as true
 
       if (image1File) formData.append("image1", image1File);
       if (image2File) formData.append("image2", image2File);
@@ -61,7 +61,7 @@ const AddProduct = ({ token: tokenProp }) => {
         subCategory,
         price,
         sizes,
-        bestseller,
+        bestSeller,
         tokenPresent: !!token,
       });
 
@@ -85,7 +85,7 @@ const AddProduct = ({ token: tokenProp }) => {
       setCategory("Men");
       setSubcategory("Topwear");
       setPrice("");
-      setBestseller(false);
+      setBestSeller(false);
       setSizes([]);
       setImage1(null);
       setImage2(null);
@@ -369,8 +369,8 @@ const AddProduct = ({ token: tokenProp }) => {
         {/* Bestseller */}
         <label className="mt-6 flex items-center gap-2 text-sm text-gray-700">
           <input
-            onChange={(e) => setBestseller(prev => !prev)}
-            checked={bestseller}
+            onChange={(e) => setBestSeller(prev => !prev)}
+            checked={bestSeller}
             type="checkbox"
             className="size-4 rounded-md border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
           />

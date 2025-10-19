@@ -20,8 +20,8 @@ function ListProduct({ token: tokenProp }) {
       })
       if(response.data.success){
         setList(response.data || [])
-        console.log(response.data); 
       }
+      console.log(response.data); 
     } catch (error) {
       if (error?.response?.status === 401) {
         toast.error('Unauthorized: invalid or missing admin token');
@@ -36,12 +36,7 @@ useEffect(()=>{
 }, [tokenProp])
   return (
     <div>
-      {/* Simple output for confirmation */}
-      {list?.length ? (
-        <p className="text-sm text-gray-600">Loaded {list.length} products.</p>
-      ) : (
-        <p className="text-sm text-gray-400">No products loaded.</p>
-      )}
+
     </div>
   )
 }
