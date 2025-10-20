@@ -15,6 +15,16 @@ const addProduct = async (req, res) => {
       bestSeller,
     } = req.body;
 
+    // Coerce bestSeller from form-data string to boolean
+    const bestSellerBool = (() => {
+      if (typeof bestSeller === "boolean") return bestSeller;
+      if (typeof bestSeller === "string") {
+        const v = bestSeller.trim().toLowerCase();
+        return v === "true" || v === "1" || v === "yes" || v === "on";
+      }
+      return false;
+    })();
+
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
@@ -33,14 +43,21 @@ const addProduct = async (req, res) => {
       })
     );
 
+    let parsedSize = [];
+    try {
+      parsedSize = size ? JSON.parse(size) : [];
+    } catch (e) {
+      parsedSize = [];
+    }
+
     const productData = {
       name,
       price: Number(price),
       description,
       category,
       subCategory,
-      size: JSON.parse(size),
-      bestSeller: bestSeller === true ? true : false,
+      size: parsedSize,
+      bestSeller: bestSellerBool,
       image: imageUrl,
       date: Date.now(),
     };
