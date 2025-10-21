@@ -297,7 +297,11 @@ const AddProduct = ({ token: tokenProp }) => {
               Product category
             </label>
             <select
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                // Reset sizes when category changes so options don't mix
+                setSizes([]);
+              }}
               className={selectClass}
             >
               <option>Women</option>
@@ -314,13 +318,20 @@ const AddProduct = ({ token: tokenProp }) => {
               Sub category
             </label>
             <select
-              onChange={(e) => setSubcategory(e.target.value)}
+              onChange={(e) => {
+                setSubcategory(e.target.value);
+                // Reset sizes when sub category changes
+                setSizes([]);
+              }}
               id="sub"
               className={selectClass}
             >
               <option>Topwear</option>
               <option>Bottomwear</option>
               <option>Footwear</option>
+              <option>Ethnicwear</option>
+              <option>Westernwear</option>
+              <option>Outerwear</option>
               <option>Other</option>
             </select>
           </div>
@@ -347,23 +358,162 @@ const AddProduct = ({ token: tokenProp }) => {
         {/* Sizes */}
         <div className="mt-6">
           <p className="text-sm font-medium text-gray-700">Product sizes</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <div onClick={()=> setSizes(prev => prev.includes("S")? prev.filter(item => item !== "S") : [...prev, "S"])} className={`inline-flex items-center justify-center h-8 w-10 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${sizes.includes("S") ? "ring-2 ring-emerald-500" : ""}`}>
-              S
+          {category === "Kids" ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("4Y") ? prev.filter((i) => i !== "4Y") : [...prev, "4Y"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("4Y") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                4Y
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("6Y") ? prev.filter((i) => i !== "6Y") : [...prev, "6Y"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("6Y") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                6Y
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("8Y") ? prev.filter((i) => i !== "8Y") : [...prev, "8Y"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("8Y") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                8Y
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("10Y") ? prev.filter((i) => i !== "10Y") : [...prev, "10Y"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-14 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("10Y") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                10Y
+              </div>
             </div>
-            <div onClick={()=> setSizes(prev => prev.includes("M")? prev.filter(item => item !== "M") : [...prev, "M"])} className={`inline-flex items-center justify-center h-8 w-10 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${sizes.includes("M") ? "ring-2 ring-emerald-500" : ""}`}>
-              M
+          ) : subCategory === "Bottomwear" ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("30") ? prev.filter((i) => i !== "30") : [...prev, "30"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("30") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                30
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("32") ? prev.filter((i) => i !== "32") : [...prev, "32"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("32") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                32
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("34") ? prev.filter((i) => i !== "34") : [...prev, "34"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("34") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                34
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) =>
+                    prev.includes("36") ? prev.filter((i) => i !== "36") : [...prev, "36"]
+                  )
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("36") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                36
+              </div>
             </div>
-            <div onClick={()=> setSizes(prev => prev.includes("L")? prev.filter(item => item !== "L") : [...prev, "L"])} className={`inline-flex items-center justify-center h-8 w-10 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${sizes.includes("L") ? "ring-2 ring-emerald-500" : ""}`}>
-              L
+          ) : (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <div
+                onClick={() =>
+                  setSizes((prev) => (prev.includes("S") ? prev.filter((item) => item !== "S") : [...prev, "S"]))
+                }
+                className={`inline-flex items-center justify-center h-8 w-10 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("S") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                S
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) => (prev.includes("M") ? prev.filter((item) => item !== "M") : [...prev, "M"]))
+                }
+                className={`inline-flex items-center justify-center h-8 w-10 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("M") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                M
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) => (prev.includes("L") ? prev.filter((item) => item !== "L") : [...prev, "L"]))
+                }
+                className={`inline-flex items-center justify-center h-8 w-10 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("L") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                L
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) => (prev.includes("XL") ? prev.filter((item) => item !== "XL") : [...prev, "XL"]))
+                }
+                className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("XL") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                XL
+              </div>
+              <div
+                onClick={() =>
+                  setSizes((prev) => (prev.includes("XXL") ? prev.filter((item) => item !== "XXL") : [...prev, "XXL"]))
+                }
+                className={`inline-flex items-center justify-center h-8 w-14 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${
+                  sizes.includes("XXL") ? "ring-2 ring-emerald-500" : ""
+                }`}
+              >
+                XXL
+              </div>
             </div>
-            <div onClick={()=> setSizes(prev => prev.includes("XL")? prev.filter(item => item !== "XL") : [...prev, "XL"])} className={`inline-flex items-center justify-center h-8 w-12 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${sizes.includes("XL") ? "ring-2 ring-emerald-500" : ""}`}>
-              XL
-            </div>
-            <div onClick={()=> setSizes(prev => prev.includes("XXL")? prev.filter(item => item !== "XXL") : [...prev, "XXL"])} className={`inline-flex items-center justify-center h-8 w-14 rounded-md border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm ${sizes.includes("XXL") ? "ring-2 ring-emerald-500" : ""}`}>
-              XXL
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Bestseller */}

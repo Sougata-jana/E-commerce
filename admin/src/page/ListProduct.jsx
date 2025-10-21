@@ -1,80 +1,68 @@
-import axios from 'axios'
-import React, { useEffect, useMemo, useState } from 'react'
-import { backendUrl } from '../App'
-import { toast } from 'react-toastify'
+import axios from "axios";
+import React, { useEffect } from "react";
+import { useState } from "react";
+import { backendUrl, rupee } from "../App";
+import { toast } from "react-toastify";
 
 function ListProduct({ token: tokenProp }) {
-  const [list, setList] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [query, setQuery] = useState('')
-  const [refreshKey, setRefreshKey] = useState(0)
+  const [list, setList] = useState([]);
 
-  const token = tokenProp || localStorage.getItem('token') || ''
-
-  const fetchList = async () =>{
+  const fetchlist = async () => {
     try {
+      const token = tokenProp || localStorage.getItem("token") || "";
       if (!token) {
-        toast.error('Unauthorized: please login as admin first')
-        return
+        toast.error("Unauthorized: please login as admin first");
+        return;
       }
-      setLoading(true)
-      const response = await axios.get(backendUrl + '/api/product/list', {
+      const response = await axios.get(backendUrl + "/api/product/list", {
         headers: { token },
-      })
-      const data = Array.isArray(response.data) ? response.data : []
-      setList(data)
+      });
+      // Backend returns an array for list; handle both array and wrapped shapes
+      const data = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
+      setList(data);
+      console.log(response.data);
     } catch (error) {
       if (error?.response?.status === 401) {
-        toast.error('Unauthorized: invalid or missing admin token')
+        toast.error("Unauthorized: invalid or missing admin token");
       } else {
-        toast.error(error?.response?.data?.message || 'Failed to fetch products')
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch products"
+        );
       }
-    } finally {
-      setLoading(false)
     }
-  }
+  };
 
-  useEffect(()=>{
-    fetchList()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, refreshKey])
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return list
-    return list.filter(p =>
-      p?.name?.toLowerCase().includes(q) ||
-      p?.category?.toLowerCase().includes(q) ||
-      p?.subCategory?.toLowerCase().includes(q)
-    )
-  }, [list, query])
-
-  const handleDelete = async (id) => {
-    if (!id) return
-    const ok = window.confirm('Are you sure you want to delete this product?')
-    if (!ok) return
+  const removeProduct = async (id) => {
     try {
-      await axios.post(backendUrl + '/api/product/remove', { id }, {
-        headers: { token },
-      })
-      toast.success('Product removed')
-      setRefreshKey(k => k + 1)
+      // Token isn't required by backend for remove in current routes, but pass if available
+      const token = tokenProp || localStorage.getItem("token") || "";
+      const response = await axios.post(
+        backendUrl + "/api/product/remove",
+        { id },
+        { headers: token ? { token } : {} }
+      );
+
+      // Backend returns { message: "product removed" } with 200 status
+      if (response.status === 200) {
+        const msg = response?.data?.message || "Product removed";
+        toast.success(msg);
+        // Optimistically update local list so UI reflects removal without manual refresh
+        setList((prev) => prev.filter((p) => p?._id !== id));
+      } else {
+        toast.error(response?.data?.message || "Failed to remove product");
+      }
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Failed to remove product')
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Failed to remove product");
     }
-  }
-
-  const formatCurrency = (n) => {
-    const num = Number(n)
-    if (Number.isNaN(num)) return '-'
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(num)
-  }
-
-  const formatDate = (ts) => {
-    if (!ts) return '-'
-    try { return new Date(ts).toLocaleDateString() } catch { return '-' }
-  }
-
+  };
+  useEffect(() => {
+    fetchlist();
+  }, [tokenProp]);
   return (
     <div className="max-w-screen-2xl mx-auto">
       <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-6 sm:p-8">
@@ -82,14 +70,6 @@ function ListProduct({ token: tokenProp }) {
           <div>
             <h1 className="text-lg font-semibold text-gray-900">Products</h1>
             <p className="text-sm text-gray-500">Manage your store catalog</p>
-          </div>
-          <div className="max-w-xs w-full">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, category, subcategory"
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
           </div>
         </div>
 
@@ -103,47 +83,64 @@ function ListProduct({ token: tokenProp }) {
                 <th className="py-3 pr-4 font-medium">Price</th>
                 <th className="py-3 pr-4 font-medium">Sizes</th>
                 <th className="py-3 pr-4 font-medium">Best seller</th>
-                <th className="py-3 pr-4 font-medium">Date</th>
                 <th className="py-3 pr-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="align-top">
-              {loading ? (
-                <tr>
-                  <td className="py-6 text-gray-500" colSpan={8}>Loading…</td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td className="py-6 text-gray-400" colSpan={8}>No products found</td>
-                </tr>
-              ) : (
-                filtered.map((p) => {
-                  const thumb = Array.isArray(p?.image) && p.image.length ? p.image[0] : null
+              {Array.isArray(list) && list.length > 0 ? (
+                list.map((item, index) => {
+                  const key = item?._id || index;
+                  const thumb =
+                    Array.isArray(item?.image) && item.image.length
+                      ? item.image[0]
+                      : null;
                   return (
-                    <tr key={p._id} className="border-t border-emerald-100/60">
+                    <tr key={key} className="border-t border-emerald-100/60">
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-3 min-w-[220px]">
                           <div className="h-12 w-12 rounded-md bg-gray-100 overflow-hidden flex items-center justify-center">
                             {thumb ? (
-                              <img src={thumb} alt={p.name} className="h-full w-full object-cover" />
+                              <img
+                                src={thumb}
+                                alt={item?.name || "product"}
+                                className="h-full w-full object-cover"
+                              />
                             ) : (
-                              <span className="text-xs text-gray-400">No image</span>
+                              <span className="text-xs text-gray-400">
+                                No image
+                              </span>
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900 line-clamp-1">{p.name}</div>
-                            <div className="text-xs text-gray-500">{p._id}</div>
+                            <div className="font-medium text-gray-900 line-clamp-1">
+                              {item?.name || "-"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {item?._id || ""}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 pr-4 text-gray-700">{p.category || '-'}</td>
-                      <td className="py-3 pr-4 text-gray-700">{p.subCategory || '-'}</td>
-                      <td className="py-3 pr-4 text-gray-900">{formatCurrency(p.price)}</td>
                       <td className="py-3 pr-4 text-gray-700">
-                        {Array.isArray(p.size) && p.size.length ? (
+                        {item?.category || "-"}
+                      </td>
+                      <td className="py-3 pr-4 text-gray-700">
+                        {item?.subCategory || "-"}
+                      </td>
+                      <td className="py-3 pr-4 text-gray-900">
+                        {rupee}
+                        {item?.price}
+                      </td>
+                      <td className="py-3 pr-4 text-gray-700">
+                        {Array.isArray(item?.size) && item.size.length ? (
                           <div className="flex flex-wrap gap-1">
-                            {p.size.map((s) => (
-                              <span key={s} className="inline-flex items-center justify-center h-6 min-w-6 px-1 rounded border border-gray-200 bg-white text-xs text-gray-700">{s}</span>
+                            {item.size.map((s) => (
+                              <span
+                                key={s}
+                                className="inline-flex items-center justify-center h-6 min-w-6 px-1 rounded border border-gray-200 bg-white text-xs text-gray-700"
+                              >
+                                {s}
+                              </span>
                             ))}
                           </div>
                         ) : (
@@ -151,31 +148,41 @@ function ListProduct({ token: tokenProp }) {
                         )}
                       </td>
                       <td className="py-3 pr-4">
-                        {p.bestSeller ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-xs font-medium">Yes</span>
+                        {item?.bestSeller ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-xs font-medium">
+                            Yes
+                          </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">No</span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">
+                            No
+                          </span>
                         )}
                       </td>
-                      <td className="py-3 pr-4 text-gray-600">{formatDate(p.date)}</td>
                       <td className="py-3 pr-0 text-right">
                         <button
-                          onClick={() => handleDelete(p._id)}
+                          onClick={() => removeProduct(item._id)}
+                          type="button"
                           className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
                         >
                           Delete
                         </button>
                       </td>
                     </tr>
-                  )
+                  );
                 })
+              ) : (
+                <tr>
+                  <td className="py-6 text-gray-400" colSpan={7}>
+                    No products found
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default ListProduct
+export default ListProduct;
