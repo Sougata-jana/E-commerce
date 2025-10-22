@@ -1,10 +1,27 @@
-import React from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import React, { useMemo } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 function Order() {
   const location = useLocation()
   const navigate = useNavigate()
-  const order = location.state?.order
+  const params = useParams()
+  const order = useMemo(() => {
+    if (location.state?.order) return location.state.order
+    try {
+      // If an id param is provided, try to match from orders history
+      const id = params.orderId
+      const listRaw = localStorage.getItem('orders')
+      const list = listRaw ? JSON.parse(listRaw) : []
+      if (id && Array.isArray(list)) {
+        const found = list.find(o => o.id === id)
+        if (found) return found
+      }
+      // Fallback to lastOrder
+      const raw = localStorage.getItem('lastOrder')
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return null
+  }, [location.state, params.orderId])
 
   if (!order) {
     return (

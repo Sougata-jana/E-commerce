@@ -13,6 +13,7 @@ const ShopContextProvider = (props) =>{
     const [showsearch, setShowSearch] = useState(true)
     const [cartItem, setCartItem] = useState({})
     const [products, setProduct] = useState([])
+    const [token, setToken] = useState ('')
     const navigate = useNavigate()
 
     // Add to cart: supports quantity and default size key
@@ -154,6 +155,12 @@ const ShopContextProvider = (props) =>{
         getProductData()
     },[])
 
+    useEffect(()=>{
+        if(!token && localStorage.getItem('token')){
+            setToken(localStorage.getItem('token'))
+        }
+    },[])
+
     const value = {
         products,
         currency,
@@ -175,6 +182,8 @@ const ShopContextProvider = (props) =>{
         getCartCount,
         navigate,
         backendUrl,
+        token,
+        setToken
     }
 
     return (

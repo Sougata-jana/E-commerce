@@ -1,47 +1,92 @@
-import React, { useState } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { shopContext } from '../context/ShopContext'
 import { toast } from 'react-toastify'
 import { assets } from '../assets/assets'
+import axios from 'axios'
+
 
 function Login() {
   const navigate = useNavigate()
-  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
+  const { token, setToken, backendUrl } = useContext(shopContext)
+  const [mode, setMode] = useState('signin') // default to signup first, then signin
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [remember, setRemember] = useState(true)
-  const [fullName, setFullName] = useState('')
-  const [confirm, setConfirm] = useState('')
+  const [name, setName] = useState('')
+ 
+
+
 
   const inputCls = 'w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-black/10 focus:border-black/40 outline-none bg-white'
 
   const validate = () => {
     const okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     if (!okEmail) { toast.error('Enter a valid email address'); return false }
-    if (password.length < 6) { toast.error('Password must be at least 6 characters'); return false }
+    if (password.length < 8) { toast.error('Password must be at least 8 characters'); return false }
     if (mode === 'signin') {
       if (!email.trim() || !password) { toast.error('Please enter email and password'); return false }
       return true
     }
     // signup
-    if (!fullName.trim()) { toast.error('Please enter your full name'); return false }
-    if (confirm !== password) { toast.error('Passwords do not match'); return false }
+    if (!name.trim()) { toast.error('Please enter your full name'); return false }
     return true
   }
 
-  const onSubmit = (e) => {
+
+
+  const onSubmit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
-    if (mode === 'signin') {
-      toast.success('Welcome back!')
-      navigate('/')
-    } else {
-      toast.success('Account created! Please sign in.')
-      setMode('signin')
-      setPassword(''); setConfirm('')
+    try {
+      if (!validate()) return
+      if (mode === 'signup') {
+        // Sign up → POST /api/user/register
+        const res = await axios.post(backendUrl + '/api/user/register', { name, email, password })
+        const data = res?.data
+        if (data?.success || data?.statusCode === 201) {
+          // Do not auto-login after register; move to sign-in step
+          toast.success('Account created! Please sign in.')
+          setMode('signin')
+          setPassword('')
+          return
+        }
+        toast.error(data?.message || 'Registration failed')
+      } else {
+        // Sign in → POST /api/user/login
+        const res = await axios.post(backendUrl + '/api/user/login', { email, password })
+        const data = res?.data
+        const t = data?.data?.token || data?.token
+        if (t) {
+          setToken(t)
+          localStorage.setItem('token', t)
+          toast.success('Welcome back!')
+          // navigate('/')
+          return
+        }
+        console.log(res.data);
+        
+        toast.error(data?.message || 'Login failed')
+      }
+      
+    } catch (error) {
+      // Friendly message for invalid credentials during sign in
+      const status = error?.response?.status
+      if (mode === 'signin' && (status === 400 || status === 401 || status === 404)) {
+        toast.error('Invalid email or password')
+      } else {
+        const msg = error?.response?.data?.message || error.message || 'Request failed'
+        toast.error(msg)
+      }
+      console.error('Auth error:', error?.response?.data || error)
     }
   }
 
+  useEffect(()=>{
+    if(token){
+      navigate('/')
+    }
+  },[token])
   return (
     <div className='min-h-[70vh] grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-sm bg-white'>
       {/* Visual side */}
@@ -82,12 +127,12 @@ function Login() {
             {mode === 'signup' && (
               <div>
                 <label className='text-sm text-gray-600'>Full name</label>
-                <input value={fullName} onChange={(e)=>setFullName(e.target.value)} className={inputCls} placeholder='John Doe' />
+                <input value={name} onChange={(e)=>setName(e.target.value)} className={inputCls} />
               </div>
             )}
             <div>
               <label className='text-sm text-gray-600'>Email address</label>
-              <input type='email' value={email} onChange={(e)=>setEmail(e.target.value)} className={inputCls} placeholder='you@example.com' />
+              <input type='email' value={email} onChange={(e)=>setEmail(e.target.value)} className={inputCls}  />
             </div>
             <div>
               <div className='flex items-center justify-between'>
@@ -112,12 +157,6 @@ function Login() {
                 </span>
               </div>
             </div>
-            {mode === 'signup' && (
-              <div>
-                <label className='text-sm text-gray-600'>Confirm password</label>
-                <input type={show?'text':'password'} value={confirm} onChange={(e)=>setConfirm(e.target.value)} className={inputCls} placeholder='••••••••' />
-              </div>
-            )}
 
             {mode === 'signin' && (
               <div className='flex items-center justify-between'>
@@ -129,7 +168,9 @@ function Login() {
               </div>
             )}
 
-            <button type='submit' className='w-full px-4 py-2.5 rounded-full bg-black text-white hover:opacity-90'>Sign in</button>
+            <button type='submit' className='w-full px-4 py-2.5 rounded-full bg-black text-white hover:opacity-90'>
+              {mode === 'signin' ? 'Sign in' : 'Create account'}
+            </button>
           </form>
 
           {/* Removed guest option as requested */}

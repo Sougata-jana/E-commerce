@@ -121,9 +121,18 @@ function PlaceOrder() {
         currency,
       },
     }
+    try {
+      // Keep last placed order for quick detail
+      localStorage.setItem('lastOrder', JSON.stringify(order))
+      // Append to orders history array
+      const prev = JSON.parse(localStorage.getItem('orders') || '[]')
+      const updated = [order, ...prev.filter(o => o.id !== order.id)]
+      localStorage.setItem('orders', JSON.stringify(updated))
+    } catch {}
     toast.success('Order placed successfully!')
     clearCart()
-    navigate('/order', { state: { order } })
+    // Go to orders list so user can track/view
+    navigate('/orders')
   }
 
   const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-black/10 focus:border-black/40 outline-none bg-white'

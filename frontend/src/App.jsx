@@ -8,6 +8,7 @@ import Contact from './page/Contact'
 import Collection from './page/Collection'
 import Login from './page/Login'
 import Order from './page/Order'
+import Orders from './page/Orders'
 import Cart from './page/Cart'
 import PlaceOrder from './page/PlaceOrder'
 import Navbar from './components/Navbar'
@@ -28,7 +29,9 @@ function App() {
         <Route path='/about' element={<About/>}/>
         <Route path='/collection' element={<Collection/>}/>
         <Route path='/login' element={<Login/>}/>
-        <Route path='/order' element={<Order/>}/>
+  <Route path='/orders' element={<Orders/>}/>
+  <Route path='/order' element={<Order/>}/>
+  <Route path='/order/:orderId' element={<Order/>}/>
         <Route path='/product/:productID' element={<Product/>}/>
         <Route path='/cart' element={<Cart/>}/>
         <Route path='/contact' element={<Contact/>}/>
