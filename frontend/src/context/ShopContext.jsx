@@ -1,6 +1,6 @@
 import {  createContext, useEffect, useState } from "react";
-import { products } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export const shopContext = createContext()
 
@@ -12,6 +12,7 @@ const ShopContextProvider = (props) =>{
     const [search, setSearch] = useState('')
     const [showsearch, setShowSearch] = useState(true)
     const [cartItem, setCartItem] = useState({})
+    const [products, setProduct] = useState([])
     const navigate = useNavigate()
 
     // Add to cart: supports quantity and default size key
@@ -115,8 +116,6 @@ const ShopContextProvider = (props) =>{
         return Math.max(0, full - disc)
     }
 
-
-
     const getCartCount = () =>{
         let totalCount = 0 
         for(const items in cartItem){
@@ -126,13 +125,34 @@ const ShopContextProvider = (props) =>{
                         totalCount += cartItem[items][item]
                     }           
                 } catch (error) {
-                    
                 }
             }
-
+        }
+        return totalCount
     }
-    return totalCount
-}
+
+    // Fetch and normalize products
+    const getProductData = async () => {
+        try {
+            const response = await axios.get(backendUrl + '/api/product/list')
+            const raw = Array.isArray(response.data) ? response.data : (response.data?.products || [])
+            const data = raw.map(p => ({
+                ...p,
+                image: Array.isArray(p.image) ? p.image : (p.image ? [p.image] : []),
+                sizes: Array.isArray(p.sizes) ? p.sizes : (Array.isArray(p.size) ? p.size : []),
+                bestseller: typeof p.bestseller === 'boolean' ? p.bestseller : !!p.bestSeller,
+                bestSeller: typeof p.bestSeller === 'boolean' ? p.bestSeller : !!p.bestseller,
+            }))
+            console.log('Products:', data)
+            setProduct(data)
+        } catch (error) {
+            console.error('Failed to load products:', error?.response?.data || error.message)
+        }
+    }
+
+    useEffect(()=>{
+        getProductData()
+    },[])
 
     const value = {
         products,
@@ -154,7 +174,7 @@ const ShopContextProvider = (props) =>{
         getDiscountedUnitPrice,
         getCartCount,
         navigate,
-        backendUrl
+        backendUrl,
     }
 
     return (

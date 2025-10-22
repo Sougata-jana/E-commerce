@@ -56,9 +56,12 @@ function Collection() {
       const s = norm(subCategory);
       list = list.filter(p => norm(p.subCategory) === s);
     }
-    // Size presence
+    // Size presence (support both `size` and `sizes` fields)
     if (size !== 'All') {
-      list = list.filter(p => Array.isArray(p.sizes) && p.sizes.includes(size));
+      list = list.filter(p => {
+        const arr = Array.isArray(p.sizes) ? p.sizes : (Array.isArray(p.size) ? p.size : []);
+        return arr.includes(size);
+      });
     }
     // Deduplicate by _id (safety against data duplication)
     const seen = new Set();

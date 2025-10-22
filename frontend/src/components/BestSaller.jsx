@@ -4,12 +4,12 @@ import Title from './Title'
 import ProductIteams from './ProductIteams'
 
 function BestSaller() {
-    const {products} = useContext(shopContext)
-    const [bestSaller, setBestsaller] = useState([])
-    useEffect(()=>{
-        const bestproducts = products.filter((item)=>(item.bestseller === true))
-        setBestsaller(bestproducts.slice(0,10))
-    },[])
+  const {products} = useContext(shopContext)
+  const [bestSaller, setBestsaller] = useState([])
+  useEffect(()=>{
+    const bestproducts = (products || []).filter((item)=> item?.bestSeller === true || item?.bestseller === true)
+    setBestsaller(bestproducts.slice(0,10))
+  },[products])
   return (
         <div className='my-10'>
         <div className='text-center py-8 text-3xl'>

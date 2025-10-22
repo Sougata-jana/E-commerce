@@ -8,8 +8,9 @@ function NewCollection() {
     const [latestProducts, setLeatestProducts] = useState([])
 
     useEffect(()=>{
-      setLeatestProducts(products.slice(0,10))
-    },[])
+      const sorted = [...(products || [])].sort((a,b)=> (b?.date ?? 0) - (a?.date ?? 0))
+      setLeatestProducts(sorted.slice(0,10))
+    },[products])
     
   return (
     <div className='my-10'>

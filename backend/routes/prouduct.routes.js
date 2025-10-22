@@ -7,7 +7,7 @@ import adminAuth from "../middleware/adminAuth.js";
 const productRouter = express.Router()
 
 productRouter.post('/add',adminAuth,upload.fields([{name:'image1', maxcount:1},{name:'image2', maxcount:1},{name:'image3', maxcount:1},{name:'image4', maxcount:1}]), addProduct)
-productRouter.get('/list',adminAuth, listproduct)
+productRouter.get('/list', listproduct)
 productRouter.post('/remove', removeProduct)
 productRouter.post('/single', singleProduct)
 
