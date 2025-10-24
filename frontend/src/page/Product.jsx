@@ -23,6 +23,37 @@ function Product() {
     setQty(1)
   }, [productID, product])
 
+  // Offer helpers and derived values MUST be declared unconditionally (before any early return)
+  const deriveStablePercent = (id) => {
+    const s = String(id || '')
+    let sum = 0
+    for (let i = 0; i < s.length; i++) sum = (sum + s.charCodeAt(i)) % 997
+    // Map sum to 10..50%
+    return 10 + (sum % 41)
+  }
+
+  const extractPercent = (raw) => {
+    if (typeof raw === 'number') return raw
+    if (raw == null) return null
+    const m = String(raw).match(/(\d+(?:\.\d+)?)/)
+    return m ? parseFloat(m[1]) : null
+  }
+
+  const offerPercent = useMemo(() => {
+    if (!product) return 0
+    const p = extractPercent(product.offer)
+    const percent = p == null || isNaN(p) ? deriveStablePercent(product._id) : p
+    return Math.max(0, Math.min(90, percent))
+  }, [product])
+
+  const offerText = useMemo(() => `${offerPercent}% OFF`, [offerPercent])
+
+  const discountedPrice = useMemo(() => {
+    const price = Number(product?.price) || 0
+    const newPrice = Math.round(price * (1 - offerPercent / 100))
+    return newPrice
+  }, [offerPercent, product?.price])
+
   if (!product) {
     return (
       <div className='max-w-7xl mx-auto px-6 lg:px-12 my-16 text-center text-gray-600'>
@@ -57,35 +88,7 @@ function Product() {
     return `Image ${idx + 1} of ${total} — ${product.name}`
   }
 
-  // Offer helpers
-  const deriveStablePercent = (id) => {
-    const s = String(id || '')
-    let sum = 0
-    for (let i = 0; i < s.length; i++) sum = (sum + s.charCodeAt(i)) % 997
-    // Map sum to 10..50%
-    return 10 + (sum % 41)
-  }
-
-  const extractPercent = (raw) => {
-    if (typeof raw === 'number') return raw
-    if (raw == null) return null
-    const m = String(raw).match(/(\d+(?:\.\d+)?)/)
-    return m ? parseFloat(m[1]) : null
-  }
-
-  const offerPercent = useMemo(() => {
-    const p = extractPercent(product.offer)
-    const percent = p == null || isNaN(p) ? deriveStablePercent(product._id) : p
-    return Math.max(0, Math.min(90, percent))
-  }, [product.offer, product._id])
-
-  const offerText = useMemo(() => `${offerPercent}% OFF`, [offerPercent])
-
-  const discountedPrice = useMemo(() => {
-    const price = Number(product.price) || 0
-    const newPrice = Math.round(price * (1 - offerPercent / 100))
-    return newPrice
-  }, [offerPercent, product.price])
+  // offerPercent, offerText, discountedPrice already defined above (unconditional)
 
   return (
     <div className='max-w-7xl mx-auto px-6 lg:px-12 my-10'>
