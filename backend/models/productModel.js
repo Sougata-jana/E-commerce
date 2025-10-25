@@ -37,7 +37,7 @@ const productSchema = mongoose.Schema(
             type:Number,
             required:true
         }
-    },{Timestamp:true}
+    },{timestamp:true}
 )
 
 const produCtModel = mongoose.model("products", productSchema)

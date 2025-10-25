@@ -18,7 +18,7 @@ const userSchema = mongoose.Schema(
             type:Object,
             default:{}
         }
-    },{Timestamp:true},{minimize:true}
+    },{timestamp:true},{minimize:true}
 )
 
 const userModel = mongoose.model("users", userSchema)
