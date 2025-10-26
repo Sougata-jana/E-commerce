@@ -38,10 +38,22 @@ const placeOrderStripe = async (req, res) => {};
 // placing orders using phonePe Method
 const placeOrderPhonePe = async (req, res) => {};
 // All Orders data foe Admin panel
-const allOrders = async (req, res) => {};
+const allOrders = async (req, res) => {
+
+};
 
 // User order Data For Fontend
-const userOrders = async (req, res) => {};
+const userOrders = async (req, res) => {
+        try {
+        const { userId } = req.body;
+
+        const orders = await orderModel.find({ userId });
+        res.status(200).json({ success: true, orders });
+    } catch (error) {
+        console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+    }
+};
 
 // Update order status by Admin
 const updateOrderStatus = async (req, res) => {};

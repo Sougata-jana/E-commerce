@@ -15,6 +15,6 @@ orderRouter.post('/stripe',authUser, placeOrderStripe)
 orderRouter.post('/phonepe',authUser, placeOrderPhonePe)
 
 // User Features
-orderRouter.post('/userorders/:userid', userOrders)
+orderRouter.post('/userorders',authUser, userOrders)
 
 export default orderRouter;

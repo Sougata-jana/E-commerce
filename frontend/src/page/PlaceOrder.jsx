@@ -153,7 +153,7 @@ function PlaceOrder() {
           
           if(res.data.success){
             clearCart();
-            navigate('/order')
+            navigate('/orders')
           }
           break;
       
