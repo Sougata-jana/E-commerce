@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { shopContext } from '../context/ShopContext'
 
 function Order() {
   const location = useLocation()
   const navigate = useNavigate()
   const params = useParams()
+  const { currency: appCurrency } = useContext(shopContext)
   const order = useMemo(() => {
     if (location.state?.order) return location.state.order
     try {
@@ -36,7 +38,29 @@ function Order() {
     )
   }
 
-  const { id, createdAt, contact, shippingAddress, payment, items, totals } = order
+  // Normalize order fields to support both local (with totals/contact) and backend (amount/address/paymentMethod) shapes
+  const id = order.id || order._id
+  const createdAt = order.createdAt || (order.date ? new Date(order.date).toISOString() : new Date().toISOString())
+  const shippingAddress = order.shippingAddress || order.address || {}
+  const contact = order.contact || {
+    fullName: shippingAddress.fullName || 'Customer',
+    phone: shippingAddress.phone || '',
+    email: shippingAddress.email || '',
+  }
+  const payment = order.payment || {
+    method: (order.paymentMethod || 'cod').toLowerCase(),
+    upiVpa: null,
+  }
+  const currency = (order.totals && order.totals.currency) || appCurrency || '₹'
+  const totals = order.totals || {
+    currency,
+    originalSubtotal: order.amount ?? 0,
+    discountedSubtotal: order.amount ?? 0,
+    savings: 0,
+    shipping: 0,
+    grandTotal: order.amount ?? 0,
+  }
+  const items = order.items || []
 
   const steps = [
     { key: 'placed', label: 'Order placed', done: true },
@@ -107,15 +131,18 @@ function Order() {
 
               {/* Items */}
               <section className='rounded-xl border p-4 sm:p-5'>
-                <h2 className='font-medium mb-3'>Items ({items.length})</h2>
+                <h2 className='font-medium mb-3'>Items ({items?.length || 0})</h2>
                 <div className='divide-y'>
                   {items.map((it) => {
-                    const pct = it.unitOriginal > 0 ? Math.max(0, Math.min(90, Math.round(100 - (it.unitDiscounted / it.unitOriginal) * 100))) : 0
+                    const unitOriginal = (typeof it.unitOriginal === 'number' ? it.unitOriginal : (typeof it.price === 'number' ? it.price : 0))
+                    const unitDiscounted = (typeof it.unitDiscounted === 'number' ? it.unitDiscounted : (typeof it.price === 'number' ? it.price : unitOriginal))
+                    const pct = unitOriginal > 0 ? Math.max(0, Math.min(90, Math.round(100 - (unitDiscounted / unitOriginal) * 100))) : 0
+                    const img = Array.isArray(it.image) ? it.image[0] : it.image
                     return (
                       <div key={`${it._id}-${it.size}`} className='py-4 flex items-center gap-4'>
                         <div className='w-16 h-16 rounded-lg border overflow-hidden bg-white'>
-                          {it.image ? (
-                            <img src={it.image} alt={it.name} className='w-full h-full object-contain' />
+                          {img ? (
+                            <img src={img} alt={it.name} className='w-full h-full object-contain' />
                           ) : (
                             <div className='w-full h-full bg-gray-100' />
                           )}
@@ -133,8 +160,8 @@ function Order() {
                           </div>
                         </div>
                         <div className='text-right'>
-                          <div className='text-xs text-gray-500 line-through'>{totals.currency}{it.unitOriginal} ea</div>
-                          <div className='text-sm font-semibold'>{totals.currency}{it.lineDiscounted}</div>
+                          <div className='text-xs text-gray-500 line-through'>{currency}{unitOriginal}</div>
+                          <div className='text-sm font-semibold'>{currency}{unitDiscounted * (it.quantity || 1)}</div>
                         </div>
                       </div>
                     )

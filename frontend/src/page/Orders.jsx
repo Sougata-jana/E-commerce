@@ -18,7 +18,8 @@ function Orders() {
         {},
         { headers: { token } }
       );
-      
+
+      setOrderData(res.data.orders || []);
     } catch (error) {}
   };
 
