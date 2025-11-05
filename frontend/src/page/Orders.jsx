@@ -111,7 +111,11 @@ function Orders() {
               </div>
               <div className="ms-auto">
                 <button
-                  onClick={() => navigate(`/order/${encodeURIComponent(row.orderId)}`, { state: { order: row.order } })}
+                  onClick={() =>
+                    navigate(`/order/${encodeURIComponent(row.orderId)}`,
+                      { state: { order: row.order, selectedItemIndex: row.itemIndex } }
+                    )
+                  }
                   className="px-3 py-2 rounded-full border border-gray-300 hover:border-black text-sm"
                 >
                   Track Order

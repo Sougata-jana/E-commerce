@@ -61,6 +61,8 @@ function Order() {
     grandTotal: order.amount ?? 0,
   }
   const items = order.items || []
+  const selectedItemIndex = location.state?.selectedItemIndex
+  const displayItems = (Number.isInteger(selectedItemIndex) && items[selectedItemIndex]) ? [items[selectedItemIndex]] : items
 
   const steps = [
     { key: 'placed', label: 'Order placed', done: true },
@@ -131,9 +133,9 @@ function Order() {
 
               {/* Items */}
               <section className='rounded-xl border p-4 sm:p-5'>
-                <h2 className='font-medium mb-3'>Items ({items?.length || 0})</h2>
+                <h2 className='font-medium mb-3'>Items ({displayItems?.length || 0})</h2>
                 <div className='divide-y'>
-                  {items.map((it) => {
+                  {displayItems.map((it) => {
                     const unitOriginal = (typeof it.unitOriginal === 'number' ? it.unitOriginal : (typeof it.price === 'number' ? it.price : 0))
                     const unitDiscounted = (typeof it.unitDiscounted === 'number' ? it.unitDiscounted : (typeof it.price === 'number' ? it.price : unitOriginal))
                     const pct = unitOriginal > 0 ? Math.max(0, Math.min(90, Math.round(100 - (unitDiscounted / unitOriginal) * 100))) : 0

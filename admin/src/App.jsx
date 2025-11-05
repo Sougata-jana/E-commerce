@@ -42,7 +42,7 @@ function App() {
                 <Routes>
                   <Route path="/add" setToken={setToken}  element={<AddProduct token={token} />} />
                   <Route path="/list" setToken={setToken}  element={<ListProduct token={token} />} />
-                  <Route path="/orders" setToken={setToken}  element={<OrderProduct />} />
+                  <Route path="/orders" setToken={setToken}  element={<OrderProduct token={token} />} />
                 </Routes>
               </div>
             </main>

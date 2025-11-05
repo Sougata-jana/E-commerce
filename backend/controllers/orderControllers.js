@@ -39,7 +39,13 @@ const placeOrderStripe = async (req, res) => {};
 const placeOrderPhonePe = async (req, res) => {};
 // All Orders data foe Admin panel
 const allOrders = async (req, res) => {
-
+  try {
+    const orders = await orderModel.find({})
+    res.json({ success: true, orders });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 // User order Data For Fontend
@@ -56,7 +62,17 @@ const userOrders = async (req, res) => {
 };
 
 // Update order status by Admin
-const updateOrderStatus = async (req, res) => {};
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+
+    await orderModel.findByIdAndUpdate(orderId, { status });
+    res.status(200).json({ success: true, message: "Order status updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export {
   placeOrder,
