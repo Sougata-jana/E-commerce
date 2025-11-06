@@ -61,6 +61,10 @@ import support_icon from "./support_icon.png";
 import PhonePe_logo_icon from "./PhonePe_logo_icon.svg";
 import droup_down_arrow from "./droup_down_arrow.png";
 import Hero_img from "./Hero_img.jpg";
+import stripe from './stripe.png'
+import Hero3 from './Hero3.jpg';
+import Hero1 from './Hero1.jpg';
+import Hero2 from './Hero2.jpg';
 
 export const assets = {
   Logo,
@@ -82,6 +86,10 @@ export const assets = {
   PhonePe_logo_icon,
   droup_down_arrow,
   Hero_img,
+  stripe,
+  Hero3,
+  Hero1,
+  Hero2
 };
 
 // Auto-generated products array (40 items) reformatted

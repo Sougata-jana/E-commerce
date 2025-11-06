@@ -1,4 +1,5 @@
-import React, { useContext, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import axios from 'axios'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { shopContext } from '../context/ShopContext'
 
@@ -6,8 +7,8 @@ function Order() {
   const location = useLocation()
   const navigate = useNavigate()
   const params = useParams()
-  const { currency: appCurrency } = useContext(shopContext)
-  const order = useMemo(() => {
+  const { currency: appCurrency, backendUrl, token } = useContext(shopContext)
+  const initialOrder = useMemo(() => {
     if (location.state?.order) return location.state.order
     try {
       // If an id param is provided, try to match from orders history
@@ -24,6 +25,32 @@ function Order() {
     } catch {}
     return null
   }, [location.state, params.orderId])
+
+  const [order, setOrder] = useState(initialOrder)
+
+  // Poll backend for this order to auto-refresh status when admin updates it
+  useEffect(() => {
+    const orderId = order?._id || order?.id || params.orderId
+    if (!token || !backendUrl || !orderId) return
+
+    let cancelled = false
+    const fetchLatest = async () => {
+      try {
+        const res = await axios.post(backendUrl + '/api/order/userorders', {}, { headers: { token } })
+        const list = res?.data?.orders || []
+        const found = list.find(o => (o._id || o.id) === orderId)
+        if (found && !cancelled) {
+          // Merge to preserve any local-only fields if present
+          setOrder(prev => ({ ...(prev || {}), ...found }))
+        }
+      } catch (_) {}
+    }
+
+    // Initial fetch and interval polling
+    fetchLatest()
+    const t = setInterval(fetchLatest, 10000) // 10s
+    return () => { cancelled = true; clearInterval(t) }
+  }, [backendUrl, token, order?._id, order?.id, params.orderId])
 
   if (!order) {
     return (
@@ -64,13 +91,27 @@ function Order() {
   const selectedItemIndex = location.state?.selectedItemIndex
   const displayItems = (Number.isInteger(selectedItemIndex) && items[selectedItemIndex]) ? [items[selectedItemIndex]] : items
 
-  const steps = [
-    { key: 'placed', label: 'Order placed', done: true },
-    { key: 'processing', label: 'Processing', done: true },
-    { key: 'shipped', label: 'Shipped', done: false },
-    { key: 'out', label: 'Out for delivery', done: false },
-    { key: 'delivered', label: 'Delivered', done: false },
-  ]
+  // Build dynamic status steps based on current order.status
+  // Normalize and map status into our step keys
+  const rawStatus = String(order.status || 'placed').toLowerCase().trim()
+  const statusKey = rawStatus
+    .replace(/\s+/g, '-') // replace spaces with hyphen
+    .replace(/^processing|^packed$/, 'packing') // common synonyms
+    .replace(/^out-for-delivery|^outfor-delivery|^out-for-deliver$/, 'out-for-delivery')
+
+  // Five-step tracker
+  const stepKeys = ['placed', 'packing', 'shipped', 'out-for-delivery', 'delivered']
+  const stepLabels = {
+    placed: 'Order placed',
+    packing: 'Packing',
+    shipped: 'Shipped',
+    'out-for-delivery': 'Out for delivery',
+    delivered: 'Delivered',
+  }
+  const baseIndex = Math.max(0, stepKeys.indexOf(statusKey))
+  const [stepIndex, setStepIndex] = useState(baseIndex)
+  useEffect(() => { setStepIndex(baseIndex) }, [baseIndex])
+  const steps = stepKeys.map((k, i) => ({ key: k, label: stepLabels[k] || k, done: i <= stepIndex }))
 
   const printInvoice = () => window.print()
 
@@ -105,30 +146,45 @@ function Order() {
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             {/* Left column */}
             <div className='md:col-span-2 space-y-6'>
-              {/* Status timeline */}
+              {/* Status stepper */}
               <section className='rounded-xl border p-4 sm:p-5'>
-                <h2 className='font-medium mb-3'>Status</h2>
-                <ol className='relative border-s-2 border-dashed ps-4 space-y-4'>
-                  {steps.map((s, idx) => (
-                    <li key={s.key} className='group'>
-                      <span className={`absolute -start-[11px] top-0 h-5 w-5 rounded-full flex items-center justify-center ${s.done ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
-                        {s.done ? (
-                          <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='h-3.5 w-3.5'>
-                            <path fillRule='evenodd' d='M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-2.29a.75.75 0 1 0-1.22-.92l-3.443 4.57-1.86-1.86a.75.75 0 1 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.143-.094l4-5.25Z' clipRule='evenodd' />
-                          </svg>
-                        ) : (
-                          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth='1.5' stroke='currentColor' className='h-3.5 w-3.5'>
-                            <path strokeLinecap='round' strokeLinejoin='round' d='M9 12l2 2 4-4' />
-                          </svg>
-                        )}
-                      </span>
-                      <div className='ms-4'>
-                        <div className={`text-sm ${s.done ? 'text-gray-900' : 'text-gray-500'}`}>{s.label}</div>
-                        {idx === 1 && <div className='text-xs text-gray-500'>Estimated delivery in 3–5 days</div>}
+                <div className='flex items-center justify-between gap-2'>
+                  <h2 className='font-medium'>Status</h2>
+                  {/* Arrow controls removed as requested */}
+                </div>
+
+                {/* Horizontal stepper */}
+                <div className='mt-4'>
+                  <div className='relative h-1 bg-gray-200 rounded-full'>
+                    <div
+                      className='absolute inset-y-0 left-0 bg-emerald-500 rounded-full transition-all duration-500'
+                      style={{ width: `${(stepIndex / (steps.length - 1)) * 100}%` }}
+                    />
+                  </div>
+
+                  <div className='mt-5 grid grid-cols-5'>
+                    {steps.map((s, i) => (
+                      <div key={s.key} className={`flex flex-col items-center ${i === 0 ? 'justify-start' : i === steps.length - 1 ? 'justify-end' : 'justify-center'}`}>
+                        <button
+                          type='button'
+                          onClick={() => setStepIndex(i)}
+                          className={`h-6 w-6 rounded-full border flex items-center justify-center transition ${s.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-gray-300 text-gray-500'}`}
+                          aria-label={`Set to ${s.label}`}
+                        >
+                          {s.done ? (
+                            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='h-3.5 w-3.5'>
+                              <path fillRule='evenodd' d='M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-2.29a.75.75 0 1 0-1.22-.92l-3.443 4.57-1.86-1.86a.75.75 0 1 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.143-.094l4-5.25Z' clipRule='evenodd' />
+                            </svg>
+                          ) : (
+                            <span className='block h-2 w-2 rounded-full bg-gray-400' />
+                          )}
+                        </button>
+                        <div className={`mt-2 text-xs ${s.done ? 'text-gray-900' : 'text-gray-500'}`}>{s.label}</div>
                       </div>
-                    </li>
-                  ))}
-                </ol>
+                    ))}
+                  </div>
+                  <p className='mt-2 text-[11px] text-gray-500'>This indicator is visual. Actual delivery status updates from the seller will reflect here automatically.</p>
+                </div>
               </section>
 
               {/* Items */}

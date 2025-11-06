@@ -20,7 +20,6 @@ function PlaceOrder() {
     backendUrl,
     clearCart
   } = useContext(shopContext);
-  const [method, setMethod] = useState("cod");
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -32,6 +31,7 @@ function PlaceOrder() {
     payment: "cod",
     upiVpa: "",
   });
+  const [placing, setPlacing] = useState(false);
 
   const cartData = useMemo(() => {
     const list = [];
@@ -108,12 +108,14 @@ function PlaceOrder() {
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    if (placing) return;
     // Validate before attempting to place order
     if (!validate()) {
       if (cartData.length === 0) navigate("/collection");
       return;
     }
     try {
+      setPlacing(true);
       let orderItems = [];
 
       for (const items in cartItem) {
@@ -146,9 +148,9 @@ function PlaceOrder() {
         items: orderItems,
         amount: grandTotal,
       };
-      switch (method) {
+      switch (form.payment) {
         case 'cod':
-          const res = await axios.post(backendUrl + '/api/order/place', orderData, {headers: {token}})
+          const res = await axios.post(backendUrl + '/api/order/place', orderData, {headers : {token}})
           console.log(res);
           
           if(res.data.success){
@@ -156,7 +158,16 @@ function PlaceOrder() {
             navigate('/orders')
           }
           break;
-      
+      case 'stripe':
+          const responseStripe = await axios.post(backendUrl + '/api/order/stripe', orderData, {headers:{token}})
+        if (responseStripe.data.success) {
+          const {session_url} = responseStripe.data
+            window.location.assign(session_url)
+        }else{
+          toast.error(responseStripe.data.message || 'Failed to initiate Stripe payment')
+        }
+
+      break
         default:
           break;
       }
@@ -164,7 +175,10 @@ function PlaceOrder() {
       console.log(error?.response?.data || error.message);
       toast.error(error?.response?.data?.message || 'Failed to place order');
       return;
-    }
+      } finally {
+        // Don’t reset placing on Stripe success because we navigate away
+        setPlacing(false);
+      }
     // const order = {
     //   id: 'ORD-' + Date.now(),
     //   createdAt: new Date().toISOString(),
@@ -312,47 +326,38 @@ function PlaceOrder() {
 
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-medium mb-4">Payment method</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {[
-                  { key: "cod", label: "Cash on Delivery" },
-                  {
-                    key: "phonepe",
-                    label: "PhonePe",
-                    logo: assets.PhonePe_logo_icon,
-                  },
-                  {
-                    key: "navi",
-                    label: "Navi UPI",
-                    logo: assets.Navi_New_Logo,
-                  },
-                  { key: "upi", label: "UPI (Other)" },
-                  { key: "card", label: "Card" },
-                ].map((opt) => (
-                  <label
-                    key={opt.key}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer bg-white ${
-                      form.payment === opt.key
-                        ? "border-black"
-                        : "border-gray-300 hover:border-black/50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value={opt.key}
-                      checked={form.payment === opt.key}
-                      onChange={onChange}
-                    />
-                    {opt.logo && (
-                      <img
-                        src={opt.logo}
-                        alt={`${opt.label} logo`}
-                        className="h-5 w-auto"
-                      />
-                    )}
-                    <span className="text-sm">{opt.label}</span>
-                  </label>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {/* COD */}
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer bg-white ${form.payment === 'cod' ? 'border-black' : 'border-gray-300 hover:border-black/50'}`}>
+                  <input type="radio" name="payment" value="cod" checked={form.payment === 'cod'} onChange={onChange} />
+                  <span className="text-sm">Cash on Delivery</span>
+                </label>
+
+                {/* Stripe */}
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer bg-white ${form.payment === 'stripe' ? 'border-black' : 'border-gray-300 hover:border-black/50'}`}>
+                  <input type="radio" name="payment" value="stripe" checked={form.payment === 'stripe'} onChange={onChange} />
+                  {assets.stripe && <img src={assets.stripe} alt="Stripe" className="h-5 w-auto" />}
+                  <span className="text-sm">Stripe</span>
+                </label>
+
+                {/* Navi UPI */}
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer bg-white ${form.payment === 'navi' ? 'border-black' : 'border-gray-300 hover:border-black/50'}`}>
+                  <input type="radio" name="payment" value="navi" checked={form.payment === 'navi'} onChange={onChange} />
+                  {assets.Navi_New_Logo && <img src={assets.Navi_New_Logo} alt="Navi UPI" className="h-5 w-auto" />}
+                  <span className="text-sm">Navi UPI</span>
+                </label>
+
+                {/* UPI (Other) */}
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer bg-white ${form.payment === 'upi' ? 'border-black' : 'border-gray-300 hover:border-black/50'}`}>
+                  <input type="radio" name="payment" value="upi" checked={form.payment === 'upi'} onChange={onChange} />
+                  <span className="text-sm">UPI (Other)</span>
+                </label>
+
+                {/* Card */}
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer bg-white ${form.payment === 'card' ? 'border-black' : 'border-gray-300 hover:border-black/50'}`}>
+                  <input type="radio" name="payment" value="card" checked={form.payment === 'card'} onChange={onChange} />
+                  <span className="text-sm">Card</span>
+                </label>
               </div>
 
               {["phonepe", "navi", "upi"].includes(form.payment) && (
@@ -375,9 +380,10 @@ function PlaceOrder() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-3 rounded-full bg-black text-white hover:opacity-90"
+                disabled={placing}
+                className={`px-6 py-3 rounded-full text-white hover:opacity-90 ${placing ? 'bg-gray-500 cursor-not-allowed' : 'bg-black'}`}
               >
-                Place order
+                {placing ? 'Processing…' : 'Place order'}
               </button>
             </div>
           </form>

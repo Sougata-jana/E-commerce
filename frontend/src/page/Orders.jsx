@@ -4,11 +4,11 @@ import { shopContext } from "../context/ShopContext.jsx";
 import axios from "axios";
 
 function Orders() {
-  const { backendUrl, token, price } = useContext(shopContext);
+  const { backendUrl, token } = useContext(shopContext); // Removed 'price' as it's not used here
   const [orderData, setOrderData] = useState([]);
   const navigate = useNavigate();
-  
-  // Flatten all order items into a single list for display
+
+  // --- Data Transformation (kept as is, it's robust) ---
   const flatItems = useMemo(() => {
     const out = [];
     for (const o of orderData || []) {
@@ -29,96 +29,133 @@ function Orders() {
           quantity: it.quantity || 1,
           image: img,
           price: typeof it.unitDiscounted === 'number' ? it.unitDiscounted : (typeof it.price === 'number' ? it.price : undefined),
+          // Ensure order status is passed through
+          status: o.status || 'Processing' 
         });
       }
     }
     return out;
   }, [orderData]);
+  // ---------------------------------------------------
 
-  const loaderData = async () => {
+  // --- Data Fetching ---
+  const fetchOrders = async () => {
     try {
       if (!token) {
-        return null;
+        // Redirect to login if no token, or handle silently if desired
+        navigate('/login'); // Example: redirect to login
+        return;
       }
       const res = await axios.post(
         backendUrl + "/api/order/userorders",
         {},
         { headers: { token } }
       );
-
       setOrderData(res.data.orders || []);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+      // Handle error (e.g., show a toast notification)
+    }
   };
 
   useEffect(() => {
-    loaderData();
-  }, [token]);
-  // const orders = useMemo(() => {
-  //   try {
-  //     const raw = localStorage.getItem('orders')
-  //     const list = raw ? JSON.parse(raw) : []
-  //     // Ensure array and sort by createdAt desc
-  //     return Array.isArray(list)
-  //       ? [...list].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
-  //       : []
-  //   } catch {
-  //     return []
-  //   }
-  // }, [])
+    fetchOrders();
+  }, [token, navigate, backendUrl]); // Added navigate and backendUrl to dependency array
 
+  // --- Empty State UI ---
   if (!flatItems.length) {
     return (
-      <div className="max-w-3xl mx-auto px-6 lg:px-12 my-12 text-center">
-        <h1 className="text-2xl font-semibold">My Orders</h1>
-        <p className="mt-2 text-gray-600">You don't have any orders yet.</p>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center bg-white rounded-2xl shadow-xl my-16">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">No Orders Yet!</h1>
+        <p className="text-lg text-gray-700 mb-8">
+          It looks like you haven't placed any orders with us.
+        </p>
+        <p className="text-md text-gray-600 mb-8">
+            Start exploring our amazing collection and find something you'll love!
+        </p>
         <Link
           to="/collection"
-          className="inline-block mt-6 px-4 py-2 rounded-full bg-black text-white hover:opacity-90"
+          className="inline-block px-8 py-3 rounded-full bg-indigo-600 text-white font-semibold text-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105 shadow-lg"
         >
-          Shop now
+          Shop Now
         </Link>
       </div>
     );
   }
 
+  // --- Orders List UI ---
   return (
-    <div className="max-w-6xl mx-auto px-6 lg:px-10 my-8">
-      <h1 className="text-xl font-semibold mb-4">My Orders</h1>
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm divide-y">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">Your Recent Orders</h1>
+      
+      <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 divide-y divide-gray-200">
         {flatItems.map((row) => {
           const date = new Date(row.created);
-          const pretty = date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+          const prettyDate = date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+          
+          // Determine status color
+          let statusColorClass = 'bg-gray-100 text-gray-700';
+          let statusText = row.status.toString().replace(/(^|\s)\S/g, l => l.toUpperCase());
+
+          if (row.status.toLowerCase() === 'placed') {
+            statusColorClass = 'bg-blue-100 text-blue-700';
+          } else if (row.status.toLowerCase() === 'processing') {
+            statusColorClass = 'bg-yellow-100 text-yellow-700';
+          } else if (row.status.toLowerCase() === 'shipped') {
+            statusColorClass = 'bg-emerald-100 text-emerald-700';
+          } else if (row.status.toLowerCase() === 'delivered') {
+            statusColorClass = 'bg-green-100 text-green-700';
+          } else if (row.status.toLowerCase() === 'cancelled') {
+            statusColorClass = 'bg-red-100 text-red-700';
+          }
+
           return (
-            <div key={`${row.orderId}-${row.id}-${row.itemIndex}`} className="p-4 sm:p-5 flex items-center gap-4">
-              <div className="w-16 h-16 rounded border overflow-hidden bg-white">
+            <div key={`${row.orderId}-${row.id}-${row.itemIndex}`} className="p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
+              {/* Product Image */}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-lg border border-gray-200 overflow-hidden bg-white flex items-center justify-center shadow-sm">
                 {row.image ? (
                   <img src={row.image} alt={row.name} className="w-full h-full object-contain" />
                 ) : (
-                  <div className="w-full h-full bg-gray-100" />
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Image</div>
                 )}
               </div>
+
+              {/* Product Details */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 line-clamp-1">{row.name || 'Item'}</div>
-                <div className='mt-1 text-xs text-gray-600 flex flex-wrap items-center gap-3'>
-                  <span>Size: {row.size || '-'}</span>
+                <Link to={`/product/${row.id}`} className="text-xl font-semibold text-gray-900 hover:text-indigo-600 transition duration-200 line-clamp-1 mb-1">
+                  {row.name || 'Item Name Not Available'}
+                </Link>
+                <div className='text-md text-gray-700 mb-2'>
+                  <span className="font-medium">{row.price ? `$${row.price.toFixed(2)}` : 'Price N/A'}</span>
+                  <span className="mx-2 text-gray-400">|</span>
                   <span>Qty: {row.quantity}</span>
-                  <span className='text-gray-500'>Date: {pretty}</span>
-                  {/* Show order shipping/status instead of raw order id */}
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${((row.order && row.order.status) || '').toLowerCase() === 'shipped' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {((row.order && row.order.status) || 'placed').toString().replace(/(^|\s)\S/g, l => l.toUpperCase())}
+                  {row.size && (
+                    <>
+                      <span className="mx-2 text-gray-400">|</span>
+                      <span>Size: {row.size}</span>
+                    </>
+                  )}
+                </div>
+                <div className='flex flex-wrap items-center gap-3 text-sm'>
+                  <span className='text-gray-500'>Order Date: {prettyDate}</span>
+                  <span className="h-1 w-1 bg-gray-300 rounded-full"></span> {/* Small dot separator */}
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${statusColorClass}`}>
+                    {statusText}
                   </span>
                 </div>
               </div>
-              <div className="ms-auto">
+
+              {/* Action Button */}
+              <div className="sm:ml-auto flex-shrink-0 mt-4 sm:mt-0">
                 <button
                   onClick={() =>
                     navigate(`/order/${encodeURIComponent(row.orderId)}`,
                       { state: { order: row.order, selectedItemIndex: row.itemIndex } }
                     )
                   }
-                  className="px-3 py-2 rounded-full border border-gray-300 hover:border-black text-sm"
+                  className="px-6 py-3 rounded-full border border-gray-300 bg-white text-gray-800 font-medium hover:border-indigo-500 hover:text-indigo-600 hover:shadow-md transition duration-300 text-base"
                 >
-                  Track Order
+                  View Details
                 </button>
               </div>
             </div>

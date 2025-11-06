@@ -1,21 +1,46 @@
-import React from 'react'
+import React from 'react';
 
 function NewLaterBox() {
+    const OnSubmithandler = (event) => {
+        event.preventDefault();
+        // Add your subscription logic here
+        alert('Subscribed!'); 
+    };
 
-        const OnSubmithandler = (event) =>{
-            event.preventDefault()
-        }
+    return (
+      // Added generous vertical padding and a subtle card-like feel
+      <div className='bg-gray-100 py-16 my-16'> 
+        <div className='container mx-auto px-4 text-center'>
+            
+            {/* Enhanced Typography */}
+            <p className='text-4xl font-extrabold text-gray-900 mb-2 tracking-tight'>
+                <span className='text-red-600'>Subscribe</span> now & get 20% off
+            </p>
+            <p className='text-lg text-gray-600 max-w-xl mx-auto mb-8'>
+                Join our community for exclusive access to new drops, special offers, and styling tips.
+            </p>
 
-  return (
-    <div className='text-center'>
-        <p  className='text-2xl font-medium text-gray-800'>Subscribe now & get 20%off</p>
-        <p className='text-gray-500'>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
-        <form onSubmit={OnSubmithandler} className='w-full sm:w-1/2 flex items-center gap-3 mx-auto my-6 border pl-3'>
-            <input className='w-full sm:flex-1  outline-none' type="email" placeholder='Enter your email' required />
-            <button type='submit' className='bg-black text-white px-10 py-4 text-xs'>Subscribe</button>
-        </form>
-    </div>
-  )
+            {/* Form with Modern Styling */}
+            <form 
+                onSubmit={OnSubmithandler} 
+                className='w-full max-w-lg flex items-center mx-auto shadow-xl rounded-lg overflow-hidden border border-gray-300'
+            >
+                <input 
+                    className='flex-1 px-5 py-4 text-base outline-none focus:ring-0 placeholder-gray-500' 
+                    type="email" 
+                    placeholder='Enter your best email address' 
+                    required 
+                />
+                <button 
+                    type='submit' 
+                    className='bg-black text-white px-8 py-4 text-sm font-semibold hover:bg-gray-800 transition duration-300 uppercase tracking-wider'
+                >
+                    Subscribe
+                </button>
+            </form>
+        </div>
+      </div>
+    );
 }
 
-export default NewLaterBox
+export default NewLaterBox;

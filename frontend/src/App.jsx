@@ -15,6 +15,7 @@ import Navbar from "./components/Navbar";
 import Product from "./page/Product";
 import Footer from "./components/Footer";
 import SearchBox from "./components/SearchBox";
+import Verify from "./page/Verify";
 
 function App() {
   const location = useLocation();
@@ -36,6 +37,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/placeorder" element={<PlaceOrder />} />
+        <Route path="/verify" element={<Verify />} />
       </Routes>
       <Footer />
       <ToastContainer

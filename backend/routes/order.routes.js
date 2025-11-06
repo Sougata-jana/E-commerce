@@ -1,4 +1,4 @@
-import { placeOrder, placeOrderStripe, placeOrderPhonePe, allOrders, userOrders, updateOrderStatus}from "../controllers/orderControllers.js";
+import { placeOrder, placeOrderStripe, placeOrderPhonePe, allOrders, userOrders, updateOrderStatus, varifyPayment}from "../controllers/orderControllers.js";
 import express from "express";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -16,5 +16,6 @@ orderRouter.post('/phonepe',authUser, placeOrderPhonePe)
 
 // User Features
 orderRouter.post('/userorders',authUser, userOrders)
+orderRouter.post('/verifyStripe', authUser, varifyPayment)
 
 export default orderRouter;
