@@ -25,14 +25,19 @@ const addProduct = async (req, res) => {
       return false;
     })();
 
-    const image1 = req.files.image1 && req.files.image1[0];
-    const image2 = req.files.image2 && req.files.image2[0];
-    const image3 = req.files.image3 && req.files.image3[0];
-    const image4 = req.files.image4 && req.files.image4[0];
+    // Support both 'image' (repeated) and individual 'image1'..'image4' fields
+    const fx = (k) => (req.files && req.files[k] ? req.files[k] : []);
+    const image1 = fx('image1')[0];
+    const image2 = fx('image2')[0];
+    const image3 = fx('image3')[0];
+    const image4 = fx('image4')[0];
+    const imageGroup = fx('image'); // array if sent as repeated field
 
-    const images = [image1, image2, image3, image4].filter(
-      (item) => item !== undefined
-    );
+    const images = [...imageGroup, image1, image2, image3, image4].filter(Boolean);
+
+    if (!images.length) {
+      return res.status(400).json({ success: false, message: "At least one product image is required." });
+    }
 
     let imageUrl = await Promise.all(
       images.map(async (item) => {
@@ -67,10 +72,10 @@ const addProduct = async (req, res) => {
     const product = new produCtModel(productData);
     await product.save();
 
-    res.json({ message: "product added" });
+    res.status(201).json({ success: true, message: "Product added", product });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ success: false, message: error?.message || "Internal server error" });
   }
 };
 

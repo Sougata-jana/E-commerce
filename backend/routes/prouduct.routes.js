@@ -6,7 +6,19 @@ import adminAuth from "../middleware/adminAuth.js";
 
 const productRouter = express.Router()
 
-productRouter.post('/add',adminAuth,upload.fields([{name:'image1', maxcount:1},{name:'image2', maxcount:1},{name:'image3', maxcount:1},{name:'image4', maxcount:1}]), addProduct)
+// Accept either a repeated "image" field or specific image1..image4 fields
+productRouter.post(
+	'/add',
+	adminAuth,
+	upload.fields([
+		{ name: 'image', maxCount: 4 },
+		{ name: 'image1', maxCount: 1 },
+		{ name: 'image2', maxCount: 1 },
+		{ name: 'image3', maxCount: 1 },
+		{ name: 'image4', maxCount: 1 },
+	]),
+	addProduct
+)
 productRouter.get('/list', listproduct)
 productRouter.post('/remove', removeProduct)
 productRouter.post('/single', singleProduct)
