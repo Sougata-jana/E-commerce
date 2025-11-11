@@ -1,6 +1,6 @@
 import validator from "validator";
 import userModel from "../models/userModel.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { ApiError } from "../utils/apiError.js";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponce.js";
@@ -17,7 +17,7 @@ const userLogin = async (req, res) => {
       throw new ApiError(404, "User not found"); 
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = bcrypt.compareSync(password, user.password);
     if (isMatch) {
       const token = createToken(user._id);
       return res
@@ -49,8 +49,8 @@ const userRegister = async (req, res) => {
     if (password.length < 8)
       throw new ApiError(400, "Password must be at least 8 characters long");
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+  const salt = bcrypt.genSaltSync(10);
+  const hashedPassword = bcrypt.hashSync(password, salt);
 
     const newUser = new userModel({
       name,
