@@ -17,7 +17,7 @@ function NewCollection() {
       <div className='container mx-auto px-4 py-16 sm:py-20'>
         
         {/* Modern Title Section */}
-        <div className='text-center mb-12'>
+        <div className='text-center mb-12 text-3xl'>
           <Title text1={"LATEST"} text2={" DROPS"}/>
           <div className='w-24 h-1 bg-black mx-auto mt-2 rounded-full'></div> 
         </div>
