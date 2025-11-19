@@ -35,3 +35,6 @@ app.use('/api/order', orderRouter)
 
 app.listen(port, ()=> console.log("server Started at port :" + port)
 )
+
+// Export for Vercel serverless
+export default app;
