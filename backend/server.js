@@ -14,9 +14,10 @@ import orderRouter from "./routes/order.routes.js";
 
 const app = express()
 const port = process.env.PORT || 4000
+
+// Initialize connections (async operations should be handled properly)
 connectDB()
 connectCloudinary()
-
 
 //middlewares
 app.use(express.json())
@@ -33,8 +34,10 @@ app.use('/api/product', productRouter )
 app.use('/api/cart', cartRouter)
 app.use('/api/order', orderRouter)
 
-app.listen(port, ()=> console.log("server Started at port :" + port)
-)
+// Only call app.listen() when NOT in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, ()=> console.log("server Started at port :" + port))
+}
 
 // Export for Vercel serverless
 export default app;
