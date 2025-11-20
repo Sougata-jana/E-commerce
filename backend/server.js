@@ -12,53 +12,43 @@ import orderRouter from "./routes/order.routes.js";
 const app = express()
 const port = process.env.PORT || 4000
 
-// Initialize connections once
-let isConnected = false;
+// Cache for serverless connections
+let cachedDb = null;
 
-async function initializeConnections() {
-    if (!isConnected) {
-        await connectDB()
-        await connectCloudinary()
-        isConnected = true;
+// Middleware to ensure connections are initialized
+const ensureConnection = async (req, res, next) => {
+    if (!cachedDb) {
+        try {
+            await connectDB();
+            await connectCloudinary();
+            cachedDb = true;
+        } catch (error) {
+            console.error("Connection error:", error);
+            return res.status(500).json({ success: false, message: "Database connection failed" });
+        }
     }
-}
+    next();
+};
 
 //middlewares
 app.use(express.json())
 app.use(cors())
+app.use(ensureConnection)
 
 // API requests
-app.get('/', async (req, res)=>{
-    await initializeConnections();
+app.get('/', (req, res)=>{
     res.send("API Working")
 })
 
 //api endpoints
-app.use('/api/user', async (req, res, next) => {
-    await initializeConnections();
-    next();
-}, userRouter)
+app.use('/api/user', userRouter)
+app.use('/api/product', productRouter)
+app.use('/api/cart', cartRouter)
+app.use('/api/order', orderRouter)
 
-app.use('/api/product', async (req, res, next) => {
-    await initializeConnections();
-    next();
-}, productRouter)
-
-app.use('/api/cart', async (req, res, next) => {
-    await initializeConnections();
-    next();
-}, cartRouter)
-
-app.use('/api/order', async (req, res, next) => {
-    await initializeConnections();
-    next();
-}, orderRouter)
-
-// Only call app.listen() when NOT in serverless environment
+// Only start server when not in Vercel
 if (process.env.VERCEL !== '1') {
-    initializeConnections().then(() => {
-        app.listen(port, ()=> console.log("server Started at port :" + port))
-    });
+    app.listen(port, ()=> console.log("server Started at port :" + port))
 }
 
 // Export for Vercel serverless
