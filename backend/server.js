@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import 'dotenv/config'
-import connectDB from "./config/mongodb.js";
+import mongoose from "mongoose";
 import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/user.routes.js";
 import productRouter from "./routes/prouduct.routes.js";
@@ -12,42 +12,66 @@ import orderRouter from "./routes/order.routes.js";
 const app = express()
 const port = process.env.PORT || 4000
 
-// Cache for serverless connections
-let cachedDb = null;
-
-// Middleware to ensure connections are initialized
-const ensureConnection = async (req, res, next) => {
-    if (!cachedDb) {
-        try {
-            await connectDB();
-            await connectCloudinary();
-            cachedDb = true;
-        } catch (error) {
-            console.error("Connection error:", error);
-            return res.status(500).json({ success: false, message: "Database connection failed" });
-        }
-    }
-    next();
-};
-
 //middlewares
 app.use(express.json())
 app.use(cors())
-app.use(ensureConnection)
+
+// MongoDB connection with caching for serverless
+let cachedDb = null;
+const connectDB = async () => {
+    if (cachedDb && mongoose.connection.readyState === 1) {
+        return cachedDb;
+    }
+    
+    try {
+        const db = await mongoose.connect(`${process.env.MONGODB_URI}/ecommerce`, {
+            serverSelectionTimeoutMS: 5000,
+        });
+        cachedDb = db;
+        console.log("MongoDB connected");
+        return db;
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
+        throw error;
+    }
+};
+
+// Initialize Cloudinary
+connectCloudinary();
 
 // API requests
-app.get('/', (req, res)=>{
-    res.send("API Working")
+app.get('/', async (req, res)=>{
+    try {
+        await connectDB();
+        res.send("API Working")
+    } catch (error) {
+        res.status(500).send("Database connection error")
+    }
 })
 
 //api endpoints
-app.use('/api/user', userRouter)
-app.use('/api/product', productRouter)
-app.use('/api/cart', cartRouter)
-app.use('/api/order', orderRouter)
+app.use('/api/user', async (req, res, next) => {
+    await connectDB();
+    next();
+}, userRouter)
+
+app.use('/api/product', async (req, res, next) => {
+    await connectDB();
+    next();
+}, productRouter)
+
+app.use('/api/cart', async (req, res, next) => {
+    await connectDB();
+    next();
+}, cartRouter)
+
+app.use('/api/order', async (req, res, next) => {
+    await connectDB();
+    next();
+}, orderRouter)
 
 // Only start server when not in Vercel
-if (process.env.VERCEL !== '1') {
+if (!process.env.VERCEL) {
     app.listen(port, ()=> console.log("server Started at port :" + port))
 }
 
