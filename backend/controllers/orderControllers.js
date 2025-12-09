@@ -9,7 +9,14 @@ import Stripe from "stripe";
 const currency = "inr";
 const deliveryCharges = 40;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeSecret ? new Stripe(stripeSecret) : null;
+
+if (!stripeSecret) {
+  console.warn(
+    "STRIPE_SECRET_KEY is not set. Stripe checkout endpoints will return 503 until it is configured."
+  );
+}
 
 const placeOrder = async (req, res) => {
   try {
@@ -55,6 +62,12 @@ const placeOrder = async (req, res) => {
 // placing orders using stripe Mthod
 const placeOrderStripe = async (req, res) => {
   try {
+    if (!stripe) {
+      return res
+        .status(503)
+        .json({ success: false, message: "Stripe is not configured" });
+    }
+
     const { userId, items, amount, address } = req.body;
     const { origin } = req.headers;
 
