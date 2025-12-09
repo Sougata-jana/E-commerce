@@ -12,63 +12,44 @@ import orderRouter from "./routes/order.routes.js";
 const app = express()
 const port = process.env.PORT || 4000
 
-//middlewares
-app.use(express.json())
-app.use(cors())
-
 // MongoDB connection with caching for serverless
-let cachedDb = null;
+let isConnected = false;
+
 const connectDB = async () => {
-    if (cachedDb && mongoose.connection.readyState === 1) {
-        return cachedDb;
+    if (isConnected && mongoose.connection.readyState === 1) {
+        return;
     }
     
     try {
-        const db = await mongoose.connect(`${process.env.MONGODB_URI}/ecommerce`, {
+        await mongoose.connect(`${process.env.MONGODB_URI}/ecommerce`, {
             serverSelectionTimeoutMS: 5000,
         });
-        cachedDb = db;
+        isConnected = true;
         console.log("MongoDB connected");
-        return db;
     } catch (error) {
         console.error("MongoDB connection error:", error);
         throw error;
     }
 };
 
-// Initialize Cloudinary
+// Initialize connections on startup
+connectDB().catch(console.error);
 connectCloudinary();
 
+//middlewares
+app.use(express.json())
+app.use(cors())
+
 // API requests
-app.get('/', async (req, res)=>{
-    try {
-        await connectDB();
-        res.send("API Working")
-    } catch (error) {
-        res.status(500).send("Database connection error")
-    }
+app.get('/', (req, res)=>{
+    res.send("API Working")
 })
 
 //api endpoints
-app.use('/api/user', async (req, res, next) => {
-    await connectDB();
-    next();
-}, userRouter)
-
-app.use('/api/product', async (req, res, next) => {
-    await connectDB();
-    next();
-}, productRouter)
-
-app.use('/api/cart', async (req, res, next) => {
-    await connectDB();
-    next();
-}, cartRouter)
-
-app.use('/api/order', async (req, res, next) => {
-    await connectDB();
-    next();
-}, orderRouter)
+app.use('/api/user', userRouter)
+app.use('/api/product', productRouter)
+app.use('/api/cart', cartRouter)
+app.use('/api/order', orderRouter)
 
 // Only start server when not in Vercel
 if (!process.env.VERCEL) {
