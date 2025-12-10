@@ -10,6 +10,14 @@ const authUser = async (req, res, next) => {
     });
   }
 
+  if (!process.env.JWT_SECRET) {
+    console.error("JWT_SECRET is not set");
+    return res.status(500).json({
+      success: false,
+      message: "Server configuration error",
+    });
+  }
+
   try {
     const token_decode = jwt.verify(token, process.env.JWT_SECRET);
     req.body.userId = token_decode.id;
@@ -18,7 +26,7 @@ const authUser = async (req, res, next) => {
     console.log(error);
     return res.status(401).json({
       success: false,
-      message: error.message,
+      message: error.message || "Invalid token",
     });
   }
 };
