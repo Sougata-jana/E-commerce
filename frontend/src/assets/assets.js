@@ -5,7 +5,7 @@ import p_img1_4 from "./p_img1_4.jpg";
 import p_img2 from "./p_img2.jpg";
 import p_img3 from "./p_img3.jpg";
 import p_img4 from "./p_img4.jpg";
-import p_img5 from "./p_img5.jpg";
+import p_img5 from "./P_img5.jpg";
 import p_img6 from "./p_img6.jpg";
 import p_img7 from "./p_img7.jpg";
 import p_img8 from "./p_img8.jpg";
