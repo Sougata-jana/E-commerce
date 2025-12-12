@@ -63,8 +63,6 @@ const connectDB = async () => {
                 socketTimeoutMS: 45000,
                 maxPoolSize: 1, // Important for serverless
                 minPoolSize: 1,
-                bufferCommands: false,
-                bufferMaxEntries: 0,
             });
             
             console.log("MongoDB connected successfully");
