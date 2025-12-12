@@ -98,14 +98,32 @@ connectCloudinary();
 app.use(express.json())
 app.use(cors())
 
-// Health check endpoint (doesn't require DB)
-app.get('/', (req, res) => {
+// Health check endpoint (attempts DB connection)
+app.get('/', async (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    
+    // Try to connect if not connected
+    let dbError = null;
+    if (dbStatus === "disconnected") {
+        try {
+            await connectDB();
+        } catch (error) {
+            dbError = error.message;
+            console.error("Health check DB connection failed:", error);
+        }
+    }
+    
+    const finalDbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    
     res.json({
         message: "API Working",
         status: "ok",
-        database: dbStatus,
-        timestamp: new Date().toISOString()
+        database: finalDbStatus,
+        timestamp: new Date().toISOString(),
+        ...(dbError && { 
+            dbError: dbError,
+            hint: "Check MONGODB_URI in Vercel settings and MongoDB Atlas network access"
+        })
     });
 });
 
@@ -139,10 +157,8 @@ app.use(async (req, res, next) => {
         res.status(503).json({ 
             success: false, 
             message: errorMessage,
-            ...(process.env.NODE_ENV === 'development' && { 
-                error: error.message,
-                details: errorDetails || error.stack 
-            })
+            error: error.message, // Always show error message for debugging
+            ...(errorDetails && { details: errorDetails })
         });
     }
 });
