@@ -23,7 +23,7 @@ import p_img19 from "./p_img19.jpg";
 import p_img20 from "./p_img20.jpg";
 import p_img21 from "./p_img21.jpg";
 import p_img22 from "./p_img22.jpg";
-import p_img23 from "./p_img23.jpg";
+import p_img23 from "./P_img23.jpg";
 import p_img24 from "./p_img24.jpg";
 import p_img25 from "./p_img25.jpg";
 import p_img26 from "./p_img26.jpg";
@@ -58,7 +58,7 @@ import search_icon from "./search_icon.png";
 import star_dull_icon from "./star_dull_icon.png";
 import star_icon from "./star_icon.png";
 import support_icon from "./support_icon.png";
-import PhonePe_logo_icon from "./PhonePe_logo_icon.svg";
+import PhonePe_logo_icon from "./PhonePe_Logo_icon.svg";
 import droup_down_arrow from "./droup_down_arrow.png";
 import Hero_img from "./Hero_img.jpg";
 import stripe from './stripe.png'
