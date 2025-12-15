@@ -175,19 +175,19 @@ function Product() {
         {/* Product Details & Actions */}
         <div className='flex flex-col justify-between'>
           <div>
-            <div className='flex items-center justify-between gap-4 mb-2'>
-              <h1 className='text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight'>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-2'>
+              <h1 className='text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight'>
                 {product.name}
               </h1>
               {product.bestSeller && ( // Corrected from product.bestseller
-                <span className='inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200'>
-                  <img src={assets.star_icon} alt='Star' className='w-4 h-4' /> Bestseller
+                <span className='inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200 self-start'>
+                  <img src={assets.star_icon} alt='Star' className='w-3 h-3 sm:w-4 sm:h-4' /> Bestseller
                 </span>
               )}
             </div>
 
             {/* Rating mock */}
-            <div className='flex items-center gap-1 text-base text-gray-500 mb-4'>
+            <div className='flex items-center gap-1 text-sm sm:text-base text-gray-500 mb-3 sm:mb-4'>
               {[...Array(4)].map((_, i) => (<img key={i} src={assets.star_icon} alt='Star' className='w-4 h-4' />))}
               <img src={assets.star_dull_icon} alt='Dull Star' className='w-4 h-4' />
               <span className='ml-2 text-gray-600 font-medium'>(120 reviews)</span>
