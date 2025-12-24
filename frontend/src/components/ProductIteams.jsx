@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { shopContext } from '../context/ShopContext'
 import { Link } from 'react-router-dom'
 
-function ProductIteams({_id, image, name, price}) {
+function ProductIteams({_id, image, name, price, originalPrice}) {
 
     const {currency} = useContext(shopContext)
   return (
@@ -18,10 +18,15 @@ function ProductIteams({_id, image, name, price}) {
           />
         </div>
       </div>
-      <div className='pt-3 pb-2 h-[64px]'>
-        <p className='text-sm font-medium line-clamp-2 leading-snug'>{name}</p>
+      <div className='pt-2 pb-2'>
+        <p className='text-sm font-medium line-clamp-2 leading-snug mb-1.5 px-0.5'>{name}</p>
+        <div className='flex flex-col gap-0.5 px-0.5'>
+          <p className='text-sm font-bold text-gray-900'>{currency}{price}</p>
+          {originalPrice && originalPrice > price && (
+            <p className='text-[11px] text-gray-500 line-through sm:text-[5px]'>{currency}{originalPrice}</p>
+          )}
+        </div>
       </div>
-      <p className='text-sm font-semibold'>{currency}{price}</p>
     </Link>
   )
 }
