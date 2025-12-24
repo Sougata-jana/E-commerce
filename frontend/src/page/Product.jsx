@@ -307,11 +307,11 @@ function Product() {
                       className='w-full h-48 object-contain transition-transform duration-300 group-hover:scale-105'
                     />
                   </div>
-                  <div className='mt-3 px-1'>
+                  <div className='mt-3 px-1 overflow-hidden'>
                     <p className='text-base font-semibold text-gray-800 line-clamp-1'>{item.name}</p>
-                    <div className='flex items-center gap-2 mt-1'>
-                      <span className='text-lg font-bold text-indigo-600'>{currency}{relatedDiscountedPrice}</span>
-                      <span className='text-sm text-gray-500 line-through'>{currency}{Number(item.price).toFixed(2)}</span>
+                    <div className='flex flex-col gap-0.5 mt-1'>
+                      <span className='text-sm font-bold text-indigo-600 truncate'>{currency}{relatedDiscountedPrice}</span>
+                      <span className='text-[10px] text-gray-500 line-through truncate'>{currency}{Number(item.price).toFixed(2)}</span>
                     </div>
                   </div>
                 </Link>
